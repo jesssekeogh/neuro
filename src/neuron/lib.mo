@@ -71,12 +71,12 @@ module {
                 });
             });
 
-            let ?commandList = command else return #err("Failed to set neuron dissolve delay");
+            let ?commandList = command else return #err("Failed to increase neuron dissolve delay");
 
             switch (commandList) {
                 case (#Configure _) { return #ok() };
                 case _ {
-                    return #err("Failed to set neuron dissolve delay. " # debug_show commandList);
+                    return #err("Failed to increase neuron dissolve delay. " # debug_show commandList);
                 };
             };
         };
@@ -91,12 +91,12 @@ module {
                 });
             });
 
-            let ?commandList = command else return #err("Failed to set followee");
+            let ?commandList = command else return #err("Failed to set neuron followee");
 
             switch (commandList) {
                 case (#Follow _) { return #ok() };
                 case _ {
-                    return #err("Failed to set followee. " # debug_show commandList);
+                    return #err("Failed to set neuron followee. " # debug_show commandList);
                 };
             };
         };
@@ -147,7 +147,7 @@ module {
                     return #ok(id);
                 };
                 case _ {
-                    return #err("Failed to spawn. " # debug_show commandList);
+                    return #err("Failed to spawn new neuron. " # debug_show commandList);
                 };
             };
         };
