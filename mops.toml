@@ -1,0 +1,12 @@
+[package]
+name = "neuro"
+version = "0.1.0"
+description = "Basic staking and control of neurons in motoko"
+repository = "https://github.com/jesssekeogh/neuron"
+keywords = [ "neuro", "neuron", "nns", "stake", "icp" ]
+license = "MIT"
+
+[dependencies]
+sha2 = "0.0.6"
+encoding = "https://github.com/aviate-labs/encoding.mo#master"
+account-identifier = "1.0.2"
