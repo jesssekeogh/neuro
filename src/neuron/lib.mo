@@ -58,71 +58,6 @@ module {
             };
         };
 
-        public func increaseDissolveDelay({
-            additional_dissolve_delay_seconds : Nat32;
-        }) : async ConfigureResult {
-            let { command } = await IcpGovernance.manage_neuron({
-                id = ?{ id = neuron_id };
-                neuron_id_or_subaccount = null;
-                command = ? #Configure({
-                    operation = ? #IncreaseDissolveDelay({
-                        additional_dissolve_delay_seconds = additional_dissolve_delay_seconds;
-                    });
-                });
-            });
-
-            let ?commandList = command else return #err("Failed to increase neuron dissolve delay");
-
-            switch (commandList) {
-                case (#Configure _) { return #ok() };
-                case _ {
-                    return #err("Failed to increase neuron dissolve delay. " # debug_show commandList);
-                };
-            };
-        };
-
-        public func follow({ topic : Int32; followee : NeuronId }) : async ConfigureResult {
-            let { command } = await IcpGovernance.manage_neuron({
-                id = ?{ id = neuron_id };
-                neuron_id_or_subaccount = null;
-                command = ? #Follow({
-                    topic = topic;
-                    followees = [{ id = followee }];
-                });
-            });
-
-            let ?commandList = command else return #err("Failed to set neuron followee");
-
-            switch (commandList) {
-                case (#Follow _) { return #ok() };
-                case _ {
-                    return #err("Failed to set neuron followee. " # debug_show commandList);
-                };
-            };
-        };
-
-        public func split({ amount_e8s : Nat64 }) : async SpawnResult {
-            let { command } = await IcpGovernance.manage_neuron({
-                id = ?{ id = neuron_id };
-                neuron_id_or_subaccount = null;
-                command = ? #Split({ amount_e8s = amount_e8s });
-            });
-
-            let ?commandList = command else return #err("Failed to split new neuron");
-
-            switch (commandList) {
-                case (#Split { created_neuron_id }) {
-
-                    let ?{ id } = created_neuron_id else return #err("Failed to retrieve new neuron Id");
-
-                    return #ok(id);
-                };
-                case _ {
-                    return #err("Failed to split new neuron. " # debug_show commandList);
-                };
-            };
-        };
-
         public func spawn({
             percentage_to_spawn : ?Nat32;
             new_controller : ?Principal;
@@ -152,19 +87,24 @@ module {
             };
         };
 
-        public func startDissolving() : async ConfigureResult {
+        public func split({ amount_e8s : Nat64 }) : async SpawnResult {
             let { command } = await IcpGovernance.manage_neuron({
                 id = ?{ id = neuron_id };
                 neuron_id_or_subaccount = null;
-                command = ? #Configure({ operation = ? #StartDissolving({}) });
+                command = ? #Split({ amount_e8s = amount_e8s });
             });
 
-            let ?commandList = command else return #err("Failed to start dissolving neuron");
+            let ?commandList = command else return #err("Failed to split new neuron");
 
             switch (commandList) {
-                case (#Configure _) { return #ok() };
+                case (#Split { created_neuron_id }) {
+
+                    let ?{ id } = created_neuron_id else return #err("Failed to retrieve new neuron Id");
+
+                    return #ok(id);
+                };
                 case _ {
-                    return #err("Failed to start dissolving neuron. " # debug_show commandList);
+                    return #err("Failed to split new neuron. " # debug_show commandList);
                 };
             };
         };
@@ -187,6 +127,163 @@ module {
                 case (#Disburse _) { return #ok() };
                 case _ {
                     return #err("Failed to disburse neuron. " # debug_show commandList);
+                };
+            };
+        };
+
+        public func registerVote({ vote : Int32; proposal : NeuronId }) : async ConfigureResult {
+            let { command } = await IcpGovernance.manage_neuron({
+                id = ?{ id = neuron_id };
+                neuron_id_or_subaccount = null;
+                command = ? #RegisterVote({
+                    vote = vote;
+                    proposal = ?{ id = proposal };
+                });
+            });
+
+            let ?commandList = command else return #err("Failed to register vote");
+
+            switch (commandList) {
+                case (#RegisterVote _) { return #ok() };
+                case _ {
+                    return #err("Failed to register vote. " # debug_show commandList);
+                };
+            };
+        };
+
+        public func follow({ topic : Int32; followee : NeuronId }) : async ConfigureResult {
+            let { command } = await IcpGovernance.manage_neuron({
+                id = ?{ id = neuron_id };
+                neuron_id_or_subaccount = null;
+                command = ? #Follow({
+                    topic = topic;
+                    followees = [{ id = followee }];
+                });
+            });
+
+            let ?commandList = command else return #err("Failed to set neuron followee");
+
+            switch (commandList) {
+                case (#Follow _) { return #ok() };
+                case _ {
+                    return #err("Failed to set neuron followee. " # debug_show commandList);
+                };
+            };
+        };
+
+        public func clearFollowees({ topic : Int32 }) : async ConfigureResult {
+            let { command } = await IcpGovernance.manage_neuron({
+                id = ?{ id = neuron_id };
+                neuron_id_or_subaccount = null;
+                command = ? #Follow({
+                    topic = topic;
+                    followees = [];
+                });
+            });
+
+            let ?commandList = command else return #err("Failed to clear neuron followees");
+
+            switch (commandList) {
+                case (#Follow _) { return #ok() };
+                case _ {
+                    return #err("Failed to clear neuron followees. " # debug_show commandList);
+                };
+            };
+        };
+
+        public func increaseDissolveDelay({
+            additional_dissolve_delay_seconds : Nat32;
+        }) : async ConfigureResult {
+            let { command } = await IcpGovernance.manage_neuron({
+                id = ?{ id = neuron_id };
+                neuron_id_or_subaccount = null;
+                command = ? #Configure({
+                    operation = ? #IncreaseDissolveDelay({
+                        additional_dissolve_delay_seconds = additional_dissolve_delay_seconds;
+                    });
+                });
+            });
+
+            let ?commandList = command else return #err("Failed to increase neuron dissolve delay");
+
+            switch (commandList) {
+                case (#Configure _) { return #ok() };
+                case _ {
+                    return #err("Failed to increase neuron dissolve delay. " # debug_show commandList);
+                };
+            };
+        };
+
+        public func startDissolving() : async ConfigureResult {
+            let { command } = await IcpGovernance.manage_neuron({
+                id = ?{ id = neuron_id };
+                neuron_id_or_subaccount = null;
+                command = ? #Configure({ operation = ? #StartDissolving({}) });
+            });
+
+            let ?commandList = command else return #err("Failed to start dissolving neuron");
+
+            switch (commandList) {
+                case (#Configure _) { return #ok() };
+                case _ {
+                    return #err("Failed to start dissolving neuron. " # debug_show commandList);
+                };
+            };
+        };
+
+        public func stopDissolving() : async ConfigureResult {
+            let { command } = await IcpGovernance.manage_neuron({
+                id = ?{ id = neuron_id };
+                neuron_id_or_subaccount = null;
+                command = ? #Configure({ operation = ? #StopDissolving({}) });
+            });
+
+            let ?commandList = command else return #err("Failed to stop dissolving neuron");
+
+            switch (commandList) {
+                case (#Configure _) { return #ok() };
+                case _ {
+                    return #err("Failed to stop dissolving neuron. " # debug_show commandList);
+                };
+            };
+        };
+
+        public func addHotKey({ new_hot_key : Principal }) : async ConfigureResult {
+            let { command } = await IcpGovernance.manage_neuron({
+                id = ?{ id = neuron_id };
+                neuron_id_or_subaccount = null;
+                command = ? #Configure({
+                    operation = ? #AddHotKey({ new_hot_key = ?new_hot_key });
+                });
+            });
+
+            let ?commandList = command else return #err("Failed to add HotKey to neuron");
+
+            switch (commandList) {
+                case (#Configure _) { return #ok() };
+                case _ {
+                    return #err("Failed to add HotKey to neuron. " # debug_show commandList);
+                };
+            };
+        };
+
+        public func removeHotKey({ hot_key_to_remove : Principal }) : async ConfigureResult {
+            let { command } = await IcpGovernance.manage_neuron({
+                id = ?{ id = neuron_id };
+                neuron_id_or_subaccount = null;
+                command = ? #Configure({
+                    operation = ? #RemoveHotKey({
+                        hot_key_to_remove = ?hot_key_to_remove;
+                    });
+                });
+            });
+
+            let ?commandList = command else return #err("Failed to remove HotKey from neuron");
+
+            switch (commandList) {
+                case (#Configure _) { return #ok() };
+                case _ {
+                    return #err("Failed to remove HotKey from neuron. " # debug_show commandList);
                 };
             };
         };

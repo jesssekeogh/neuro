@@ -1,4 +1,4 @@
-# neuron
+# neuro
 
 ## Install
 ```
