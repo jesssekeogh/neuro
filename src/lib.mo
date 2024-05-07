@@ -1,10 +1,10 @@
-import S "./stake";
-import N "./neuron";
+import NNSClass "./nns";
+import NeuronClass "./neuron";
 
 module {
 
-    public let Stake = S;
+    public let NNS = NNSClass;
 
-    public let Neuron = N;
+    public let Neuron = NeuronClass;
 
 }

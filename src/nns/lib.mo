@@ -4,6 +4,7 @@ import Principal "mo:base/Principal";
 import Result "mo:base/Result";
 import Random "mo:base/Random";
 import Nat64 "mo:base/Nat64";
+import Buffer "mo:base/Buffer";
 import Sha256 "mo:sha2/Sha256";
 import Binary "mo:encoding/Binary";
 import AccountIdentifier "mo:account-identifier";
@@ -16,13 +17,20 @@ module {
 
   public type NeuronId = Nat64;
 
-  public type NewNeuronResult = Result.Result<NeuronId, Text>;
+  public type StakeNeuronResult = Result.Result<NeuronId, Text>;
+
+  public type ProposalInfo = IcpGovernanceInterface.ProposalInfo;
+
+  public type NeuronInfo = {
+    neuronId : NeuronId;
+    info : IcpGovernanceInterface.NeuronInfo;
+  };
 
   public let ICP_PROTOCOL_FEE : Nat64 = 10_000;
 
   public let ONE_ICP : Nat64 = 100_000_000;
 
-  public class Stake({
+  public class NNS({
     canister_id : Principal;
     nns_canister_id : Principal;
     icp_ledger_canister_id : Principal;
@@ -32,7 +40,7 @@ module {
 
     let IcpGovernance = actor (Principal.toText(nns_canister_id)) : IcpGovernanceInterface.Self;
 
-    public func new({ amount : Nat64 }) : async NewNeuronResult {
+    public func stake({ amount : Nat64 }) : async StakeNeuronResult {
       if (amount < ONE_ICP + ICP_PROTOCOL_FEE) return #err("A minimum of 1.0001 ICP is needed to stake");
 
       // generate a random nonce that fits into Nat64
@@ -79,6 +87,40 @@ module {
           return #err("Failed to transfer ICP: " # debug_show error);
         };
       };
+    };
+
+    public func getNeuronIds() : async [NeuronId] {
+      return await IcpGovernance.get_neuron_ids();
+    };
+
+    // If an array of neuron IDs is provided, precisely those neurons will be fetched.
+    public func listNeuronInfo({ neuronIds : ?[NeuronId] }) : async [NeuronInfo] {
+      let buf = Buffer.Buffer<NeuronInfo>(0);
+
+      let ?ids = neuronIds else {
+        // fetch all owned
+        let myIds = await getNeuronIds();
+
+        for (id in myIds.vals()) {
+          switch (await IcpGovernance.get_neuron_info(id)) {
+            case (#Ok info) {
+              buf.add({ neuronId = id; info = info });
+            };
+            case _ { /* do nothing */ };
+          };
+        };
+        return Buffer.toArray(buf);
+      };
+
+      for (id in ids.vals()) {
+        switch (await IcpGovernance.get_neuron_info(id)) {
+          case (#Ok info) {
+            buf.add({ neuronId = id; info = info });
+          };
+          case _ { /* do nothing */ };
+        };
+      };
+      return Buffer.toArray(buf);
     };
 
     // motoko version of this: https://github.com/dfinity/ic/blob/0f7973af4283f3244a08b87ea909b6f605d65989/rs/nervous_system/common/src/ledger.rs#L210
