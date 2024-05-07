@@ -5,6 +5,7 @@ import Result "mo:base/Result";
 import Random "mo:base/Random";
 import Nat64 "mo:base/Nat64";
 import Buffer "mo:base/Buffer";
+import Option "mo:base/Option";
 import Sha256 "mo:sha2/Sha256";
 import Binary "mo:encoding/Binary";
 import AccountIdentifier "mo:account-identifier";
@@ -18,8 +19,6 @@ module {
   public type NeuronId = Nat64;
 
   public type StakeNeuronResult = Result.Result<NeuronId, Text>;
-
-  public type ProposalInfo = IcpGovernanceInterface.ProposalInfo;
 
   public type NeuronInfo = {
     neuronId : NeuronId;
@@ -94,23 +93,11 @@ module {
     };
 
     // If an array of neuron IDs is provided, precisely those neurons will be fetched.
+    // motoko version of this: https://github.com/dfinity/ic-js/tree/main/packages/nns#gear-listneurons
     public func listNeuronInfo({ neuronIds : ?[NeuronId] }) : async [NeuronInfo] {
       let buf = Buffer.Buffer<NeuronInfo>(0);
 
-      let ?ids = neuronIds else {
-        // fetch all owned
-        let myIds = await getNeuronIds();
-
-        for (id in myIds.vals()) {
-          switch (await IcpGovernance.get_neuron_info(id)) {
-            case (#Ok info) {
-              buf.add({ neuronId = id; info = info });
-            };
-            case _ { /* do nothing */ };
-          };
-        };
-        return Buffer.toArray(buf);
-      };
+      let ids = Option.get(neuronIds, await getNeuronIds());
 
       for (id in ids.vals()) {
         switch (await IcpGovernance.get_neuron_info(id)) {
@@ -120,6 +107,7 @@ module {
           case _ { /* do nothing */ };
         };
       };
+
       return Buffer.toArray(buf);
     };
 
