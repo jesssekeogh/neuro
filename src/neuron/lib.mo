@@ -92,6 +92,12 @@ module {
             );
         };
 
+        public func mergeMaturity({ percentage_to_merge : Nat32 }) : async CommandResult {
+            return await manageNeuronCommand(
+                #MergeMaturity({ percentage_to_merge = percentage_to_merge })
+            );
+        };
+
         public func refresh() : async CommandResult {
             return await manageNeuronCommand(
                 #ClaimOrRefresh({
@@ -194,6 +200,7 @@ module {
                 case (#RegisterVote _) { return #ok() };
                 case (#Follow _) { return #ok() };
                 case (#ClaimOrRefresh _) { return #ok() };
+                case (#MergeMaturity _) { return #ok() };
                 case _ {
                     return #err("Command failed: " # debug_show commandList);
                 };
