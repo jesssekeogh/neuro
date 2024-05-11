@@ -79,7 +79,9 @@ module {
 
         public func split({ amount_e8s : Nat64 }) : async SpawnResult {
             return await manageNeuronSpawn(
-                #Split({ amount_e8s = amount_e8s })
+                #Split({
+                    amount_e8s = amount_e8s;
+                })
             );
         };
 
@@ -94,7 +96,9 @@ module {
 
         public func mergeMaturity({ percentage_to_merge : Nat32 }) : async CommandResult {
             return await manageNeuronCommand(
-                #MergeMaturity({ percentage_to_merge = percentage_to_merge })
+                #MergeMaturity({
+                    percentage_to_merge = percentage_to_merge;
+                })
             );
         };
 
@@ -157,7 +161,9 @@ module {
 
         public func addHotKey({ new_hot_key : Principal }) : async ConfigureResult {
             return await manageNeuronConfiguration(
-                #AddHotKey({ new_hot_key = ?new_hot_key })
+                #AddHotKey({
+                    new_hot_key = ?new_hot_key;
+                })
             );
         };
 
@@ -196,14 +202,10 @@ module {
             let ?commandList = command else return #err("Failed to execute neuron command. Neuron ID: " # debug_show neuron_id);
 
             switch (commandList) {
-                case (#Disburse _) { return #ok() };
-                case (#RegisterVote _) { return #ok() };
-                case (#Follow _) { return #ok() };
-                case (#ClaimOrRefresh _) { return #ok() };
-                case (#MergeMaturity _) { return #ok() };
-                case _ {
-                    return #err("Command failed: " # debug_show commandList);
+                case (#Error error) {
+                    return #err("Command failed: " # debug_show error);
                 };
+                case _ { return #ok() };
             };
         };
 

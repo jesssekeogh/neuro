@@ -1,7 +1,7 @@
+import Neuro "../../src";
+// In production use:
+// import Neuro "mo:neuro"
+
 actor {
 
-  public query func greet(name : Text) : async Text {
-    return "Hello, " # name # "!";
-  };
-
-}; 
+};
