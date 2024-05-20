@@ -2,7 +2,7 @@ import Text "mo:base/Text";
 import Principal "mo:base/Principal";
 import Result "mo:base/Result";
 import Nat64 "mo:base/Nat64";
-import IcpGovernanceInterface "../interfaces/governance_interface";
+import IcpGovernanceInterface "../interfaces/nns_interface";
 
 module {
 
@@ -24,7 +24,7 @@ module {
 
     public type Information = IcpGovernanceInterface.NeuronInfo and IcpGovernanceInterface.Neuron;
 
-    public class Neuron({ neuron_id : Nat64; nns_canister_id : Principal }) {
+    public class Neuron({ neuron_id : NeuronId; nns_canister_id : Principal }) {
 
         let IcpGovernance = actor (Principal.toText(nns_canister_id)) : IcpGovernanceInterface.Self;
 

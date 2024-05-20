@@ -361,5 +361,5 @@ module {
     manage_neuron : shared ManageNeuron -> async ManageNeuronResponse;
     transfer_gtc_neuron : shared (NeuronId, NeuronId) -> async Result;
     update_node_provider : shared UpdateNodeProvider -> async Result;
-  }
-}
+  };
+};

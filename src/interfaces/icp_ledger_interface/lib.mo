@@ -232,5 +232,5 @@ module {
     symbol : shared query () -> async Symbol;
     transfer : shared TransferArgs -> async Result_5;
     transfer_fee : shared query {} -> async TransferFee;
-  }
-}
+  };
+};

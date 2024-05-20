@@ -1,10 +1,16 @@
 import NNSClass "./nns";
-import NeuronClass "./neuron";
+import SNSClass "./sns";
+import NNSNeuronClass "./nns_neuron";
+import SNSNeuronClass "./sns_neuron";
 
 module {
 
     public let NNS = NNSClass;
 
-    public let Neuron = NeuronClass;
+    public let SNS = SNSClass;
+
+    public let NNSNeuron = NNSNeuronClass;
+
+    public let SNSNeuron = SNSNeuronClass;
 
 }
