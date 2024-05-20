@@ -1,0 +1,8 @@
+type Result = 
+ variant {
+   err: text;
+   ok: blob;
+ };
+service : {
+  stake_sns_neuron: () -> (Result);
+}

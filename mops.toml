@@ -2,7 +2,7 @@
 name = "neuro"
 version = "0.1.0"
 description = "Basic staking and control of neurons in motoko"
-repository = "https://github.com/jesssekeogh/neuron"
+repository = "https://github.com/jesssekeogh/neuro"
 keywords = [ "neuro", "neuron", "nns", "stake", "icp" ]
 license = "MIT"
 
