@@ -43,6 +43,21 @@ export const idlFactory = ({ IDL }) => {
   });
   const Result = IDL.Variant({ 'ok' : IDL.Vec(IDL.Nat8), 'err' : IDL.Text });
   const Test = IDL.Service({
+    'get_canister_wallet_balances' : IDL.Func(
+        [],
+        [IDL.Record({ 'chat_balance' : IDL.Nat, 'icp_balance' : IDL.Nat })],
+        [],
+      ),
+    'get_canister_wallet_information' : IDL.Func(
+        [],
+        [
+          IDL.Record({
+            'icp_legacy_account' : IDL.Text,
+            'icrc_account' : IDL.Text,
+          }),
+        ],
+        ['query'],
+      ),
     'get_sns_neuron_information' : IDL.Func([], [Result_1], []),
     'stake_sns_neuron' : IDL.Func([], [Result], []),
   });

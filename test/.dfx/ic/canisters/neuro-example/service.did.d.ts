@@ -43,6 +43,14 @@ export interface SnsNeuronInformation {
 }
 export interface Subaccount { 'subaccount' : Uint8Array | number[] }
 export interface Test {
+  'get_canister_wallet_balances' : ActorMethod<
+    [],
+    { 'chat_balance' : bigint, 'icp_balance' : bigint }
+  >,
+  'get_canister_wallet_information' : ActorMethod<
+    [],
+    { 'icp_legacy_account' : string, 'icrc_account' : string }
+  >,
   'get_sns_neuron_information' : ActorMethod<[], Result_1>,
   'stake_sns_neuron' : ActorMethod<[], Result>,
 }

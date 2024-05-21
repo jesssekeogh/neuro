@@ -36,6 +36,12 @@ type SnsNeuronInformation = record {
 };
 type Subaccount = record { subaccount : vec nat8 };
 type Test = service {
+  get_canister_wallet_balances : () -> (
+      record { chat_balance : nat; icp_balance : nat },
+    );
+  get_canister_wallet_information : () -> (
+      record { icp_legacy_account : text; icrc_account : text },
+    ) query;
   get_sns_neuron_information : () -> (Result_1);
   stake_sns_neuron : () -> (Result);
 };
