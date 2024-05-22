@@ -1,5 +1,5 @@
 # Neuro
-A Motoko package for the basic staking and managing of neurons on the Internet Computer Protocol blockchain.
+A Motoko package for basic staking and neuron management on the Internet Computer Protocol blockchain.
 
 ## Overview
 A "neuron" can be considered a type of vault for tokens on the Internet Computer Protocol (ICP) blockchain. Once a neuron is created, it grants the owner the ability to vote on governance proposals and earn rewards. There are two types of governance frameworks on ICP: The Network Nervous System (NNS) and the Service Nervous System (SNS). Recently, smart contracts (canisters) on ICP have been given the permission to stake and control neurons. Given the significant amount of boilerplate code required to set up seamless staking and management of neurons in Motoko, it was necessary to create a package that abstracts this process.
