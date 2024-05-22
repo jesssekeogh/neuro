@@ -16,6 +16,9 @@ type NeuronPermission = record {
   permission_type : vec int32;
 };
 type Result = variant { ok : vec nat8; err : text };
+type Result_1 = variant { ok : SnsNeuronId; err : text };
+type Result_2 = variant { ok : SnsNeuronInformation; err : text };
+type SnsNeuronId = vec nat8;
 type SnsNeuronInformation = record {
   id : opt NeuronId;
   staked_maturity_e8s_equivalent : opt nat64;
@@ -41,7 +44,9 @@ type Test = service {
   get_canister_wallet_information : () -> (
       record { icp_legacy_account : text; icrc_account : text },
     ) query;
+  get_sns_neuron_information : () -> (Result_2);
   list_sns_neurons : () -> (vec SnsNeuronInformation);
+  split_sns_neuron : () -> (Result_1);
   stake_sns_neuron : () -> (Result);
 };
 service : () -> Test

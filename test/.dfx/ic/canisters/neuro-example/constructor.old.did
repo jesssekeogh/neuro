@@ -20,10 +20,21 @@ type SnsNeuronInformation =
    vesting_period_seconds: opt nat64;
    voting_power_percentage_multiplier: nat64;
  };
-type Result_1 = 
+type SnsNeuronId = blob;
+type Result_3 = 
  variant {
    err: text;
    ok: SnsNeuronInformation;
+ };
+type Result_2 = 
+ variant {
+   err: text;
+   ok: nat;
+ };
+type Result_1 = 
+ variant {
+   err: text;
+   ok: SnsNeuronId;
  };
 type Result = 
  variant {
@@ -65,7 +76,9 @@ service : {
       icp_legacy_account: text;
       icrc_account: text;
     }) query;
-  get_sns_neuron_information: () -> (Result_1);
+  get_sns_neuron_information: () -> (Result_3);
+  increaseStake: () -> (Result_2);
   list_sns_neurons: () -> (vec SnsNeuronInformation);
+  split_sns_neuron: () -> (Result_1);
   stake_sns_neuron: () -> (Result);
 }

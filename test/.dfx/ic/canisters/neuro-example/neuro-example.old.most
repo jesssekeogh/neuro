@@ -1,5 +1,4 @@
 // Version: 1.0.0
-type SnsNeuronId = Blob;
 actor {
-  stable var _snsneuron : ?SnsNeuronId
+  
 };

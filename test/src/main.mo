@@ -17,16 +17,21 @@ import IcpLedgerInterface "../../src/interfaces/icp_ledger_interface";
 
 actor class Test() = thisCanister {
 
+    let OPENCHAT_SNS = "2jvtu-yqaaa-aaaaq-aaama-cai";
+    let OPENCHAT_LEDGER = "2ouva-viaaa-aaaaq-aaamq-cai";
+
+    let ICP_GOVERNANCE = "rrkah-fqaaa-aaaaa-aaaaq-cai";
+    let ICP_LEDGER = "ryjl3-tyaaa-aaaaa-aaaba-cai";
+
     ///////////////////////////////////
     /// SNS Neuron Staking Example: ///
     ///////////////////////////////////
 
     public func stake_sns_neuron() : async Result.Result<Blob, Text> {
-        // OpenChat SNS configuration:
-        let sns = SNS.SNS({
+        let sns = SNS.Governance({
             canister_id = Principal.fromActor(thisCanister);
-            sns_canister_id = Principal.fromText("2jvtu-yqaaa-aaaaq-aaama-cai");
-            sns_ledger_canister_id = Principal.fromText("2ouva-viaaa-aaaaq-aaamq-cai");
+            sns_canister_id = Principal.fromText(OPENCHAT_SNS);
+            sns_ledger_canister_id = Principal.fromText(OPENCHAT_LEDGER);
         });
 
         // The minimum stake for $CHAT is 400_000_000 e8s.
@@ -43,20 +48,57 @@ actor class Test() = thisCanister {
     };
 
     public func list_sns_neurons() : async [NeuroTypes.SnsNeuronInformation] {
-        let sns = SNS.SNS({
+        let sns = SNS.Governance({
             canister_id = Principal.fromActor(thisCanister);
-            sns_canister_id = Principal.fromText("2jvtu-yqaaa-aaaaq-aaama-cai");
-            sns_ledger_canister_id = Principal.fromText("2ouva-viaaa-aaaaq-aaamq-cai");
+            sns_canister_id = Principal.fromText(OPENCHAT_SNS);
+            sns_ledger_canister_id = Principal.fromText(OPENCHAT_LEDGER);
         });
 
         return await sns.listNeurons();
+    };
+
+    public func get_sns_neuron_information() : async Result.Result<NeuroTypes.SnsNeuronInformation, Text> {
+        let neurons = await list_sns_neurons();
+
+        // In this example, we will retrieve the first neuron from the list of staked neurons.
+        // Note: In a real-world application, you might want to store neuron identifiers in local memory
+        // or assign specific neurons to users for better management and tracking.
+        if (neurons.size() > 0) {
+            let ?{ id } = neurons[0].id else return #err("Neuron id not found");
+
+            let neuron = SNS.Neuron({
+                neuron_id = id;
+                sns_canister_id = Principal.fromText(OPENCHAT_SNS);
+            });
+
+            return await neuron.getInformation();
+        };
+
+        return #err("No neurons found");
+    };
+
+    public func split_sns_neuron() : async Result.Result<NeuroTypes.SnsNeuronId, Text> {
+        let neurons = await list_sns_neurons();
+
+        if (neurons.size() > 0) {
+            let ?{ id } = neurons[0].id else return #err("Neuron id not found");
+
+            let neuron = SNS.Neuron({
+                neuron_id = id;
+                sns_canister_id = Principal.fromText(OPENCHAT_SNS);
+            });
+
+            return await neuron.split({ amount_e8s = 400_100_000 });
+        };
+
+        return #err("No neurons found");
     };
 
     ///////////////////////////////////
     /// ICP Neuron Staking Example: ///
     ///////////////////////////////////
 
-    // TODO
+    // TODO When canisters can control neurons
 
     //////////////////////////////////////////
     /// Example canister wallet functions: ///
@@ -76,8 +118,8 @@ actor class Test() = thisCanister {
         chat_balance : Nat;
         icp_balance : Nat;
     } {
-        let openchatLedger = actor "2ouva-viaaa-aaaaq-aaamq-cai" : SnsLedgerInterface.Self;
-        let icpLedger = actor "ryjl3-tyaaa-aaaaa-aaaba-cai" : IcpLedgerInterface.Self;
+        let openchatLedger = actor (OPENCHAT_LEDGER) : SnsLedgerInterface.Self;
+        let icpLedger = actor (ICP_LEDGER) : IcpLedgerInterface.Self;
 
         let chatBalance = await openchatLedger.icrc1_balance_of({
             owner = Principal.fromActor(thisCanister);

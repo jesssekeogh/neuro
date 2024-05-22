@@ -37,6 +37,12 @@ export const idlFactory = ({ IDL }) => {
     'followees' : IDL.Vec(IDL.Tuple(IDL.Nat64, Followees)),
     'neuron_fees_e8s' : IDL.Nat64,
   });
+  const Result_2 = IDL.Variant({
+    'ok' : SnsNeuronInformation,
+    'err' : IDL.Text,
+  });
+  const SnsNeuronId = IDL.Vec(IDL.Nat8);
+  const Result_1 = IDL.Variant({ 'ok' : SnsNeuronId, 'err' : IDL.Text });
   const Result = IDL.Variant({ 'ok' : IDL.Vec(IDL.Nat8), 'err' : IDL.Text });
   const Test = IDL.Service({
     'get_canister_wallet_balances' : IDL.Func(
@@ -54,7 +60,9 @@ export const idlFactory = ({ IDL }) => {
         ],
         ['query'],
       ),
+    'get_sns_neuron_information' : IDL.Func([], [Result_2], []),
     'list_sns_neurons' : IDL.Func([], [IDL.Vec(SnsNeuronInformation)], []),
+    'split_sns_neuron' : IDL.Func([], [Result_1], []),
     'stake_sns_neuron' : IDL.Func([], [Result], []),
   });
   return Test;

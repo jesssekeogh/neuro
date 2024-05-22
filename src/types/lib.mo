@@ -49,4 +49,6 @@ module {
     public type SnsOperation = SnsGovernanceInterface.Operation;
 
     public type SnsCommand = SnsGovernanceInterface.Command;
+
+    public type SnsParameters = SnsGovernanceInterface.NervousSystemParameters;
 };

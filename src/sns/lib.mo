@@ -11,7 +11,7 @@ import SnsGovernanceInterface "../interfaces/sns_interface";
 
 module {
 
-    public class SNS({
+    public class Governance({
         canister_id : Principal;
         sns_canister_id : Principal;
         sns_ledger_canister_id : Principal;
@@ -78,6 +78,10 @@ module {
 
             return neurons;
         };
+
+        public func getParameters() : async Types.SnsParameters {
+            return await SnsGovernance.get_nervous_system_parameters(null);
+        };
     };
 
     public class Neuron({
@@ -126,11 +130,14 @@ module {
             };
         };
 
-        public func split({ memo : Nat64; amount_e8s : Nat64 }) : async Types.SnsSplitResult {
+        public func split({ amount_e8s : Nat64 }) : async Types.SnsSplitResult {
+            // generate a random nonce that fits into Nat64
+            let ?nonce = Random.Finite(await Random.blob()).range(64) else return #err("Failed to generate nonce");
+
             let { command } = await SnsGovernance.manage_neuron({
                 subaccount = neuron_id;
                 command = ? #Split({
-                    memo = memo;
+                    memo = Nat64.fromNat(nonce); // Memo should be random
                     amount_e8s = amount_e8s;
                 });
             });

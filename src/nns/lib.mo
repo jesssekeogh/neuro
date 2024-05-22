@@ -9,7 +9,7 @@ import IcpGovernanceInterface "../interfaces/nns_interface";
 
 module {
 
-  public class NNS({
+  public class Governance({
     canister_id : Principal;
     nns_canister_id : Principal;
     icp_ledger_canister_id : Principal;
