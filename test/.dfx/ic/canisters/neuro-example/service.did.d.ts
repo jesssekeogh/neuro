@@ -22,8 +22,6 @@ export interface NeuronPermission {
 }
 export type Result = { 'ok' : Uint8Array | number[] } |
   { 'err' : string };
-export type Result_1 = { 'ok' : SnsNeuronInformation } |
-  { 'err' : string };
 export interface SnsNeuronInformation {
   'id' : [] | [NeuronId],
   'staked_maturity_e8s_equivalent' : [] | [bigint],
@@ -51,7 +49,7 @@ export interface Test {
     [],
     { 'icp_legacy_account' : string, 'icrc_account' : string }
   >,
-  'get_sns_neuron_information' : ActorMethod<[], Result_1>,
+  'list_sns_neurons' : ActorMethod<[], Array<SnsNeuronInformation>>,
   'stake_sns_neuron' : ActorMethod<[], Result>,
 }
 export interface _SERVICE extends Test {}

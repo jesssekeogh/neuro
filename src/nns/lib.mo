@@ -1,4 +1,3 @@
-
 import Principal "mo:base/Principal";
 import Random "mo:base/Random";
 import Nat64 "mo:base/Nat64";
@@ -24,16 +23,18 @@ module {
       // generate a random nonce that fits into Nat64
       let ?nonce = Random.Finite(await Random.blob()).range(64) else return #err("Failed to generate nonce");
 
+      let convertedNonce = Nat64.fromNat(nonce);
+
       // controller is the canister
       let neuronController : Principal = canister_id;
 
       // neurons subaccounts contain random nonces so one controller can have many neurons
-      let newSubaccount : Blob = Tools.computeNeuronStakingSubaccountBytes(neuronController, Nat64.fromNat(nonce));
-
+      let newSubaccount : Blob = Tools.computeNeuronStakingSubaccountBytes(neuronController, convertedNonce);
+      
       // the neuron account ID is a sub account of the governance canister
       let newNeuronAccount : Blob = AccountIdentifier.accountIdentifier(nns_canister_id, newSubaccount);
 
-      switch (await IcpLedger.transfer({ memo = Nat64.fromNat(nonce); from_subaccount = null; to = newNeuronAccount; amount = { e8s = amount }; fee = { e8s = 10_000 }; created_at_time = null })) {
+      switch (await IcpLedger.transfer({ memo = convertedNonce; from_subaccount = null; to = newNeuronAccount; amount = { e8s = amount }; fee = { e8s = 10_000 }; created_at_time = null })) {
         case (#Ok _) {
           // ClaimOrRefresh: finds the neuron by subaccount and checks if the memo matches the nonce
           let { command } = await IcpGovernance.manage_neuron({
@@ -42,7 +43,7 @@ module {
             command = ? #ClaimOrRefresh({
               by = ? #MemoAndController({
                 controller = ?neuronController;
-                memo = Nat64.fromNat(nonce);
+                memo = convertedNonce;
               });
             });
           });
@@ -80,7 +81,10 @@ module {
     };
   };
 
-  public class Neuron({ neuron_id : Types.NnsNeuronId; nns_canister_id : Principal }) {
+  public class Neuron({
+    neuron_id : Types.NnsNeuronId;
+    nns_canister_id : Principal;
+  }) {
 
     let IcpGovernance = actor (Principal.toText(nns_canister_id)) : IcpGovernanceInterface.Self;
 

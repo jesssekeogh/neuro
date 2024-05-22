@@ -17,6 +17,47 @@ import IcpLedgerInterface "../../src/interfaces/icp_ledger_interface";
 
 actor class Test() = thisCanister {
 
+    ///////////////////////////////////
+    /// SNS Neuron Staking Example: ///
+    ///////////////////////////////////
+
+    public func stake_sns_neuron() : async Result.Result<Blob, Text> {
+        // OpenChat SNS configuration:
+        let sns = SNS.SNS({
+            canister_id = Principal.fromActor(thisCanister);
+            sns_canister_id = Principal.fromText("2jvtu-yqaaa-aaaaq-aaama-cai");
+            sns_ledger_canister_id = Principal.fromText("2ouva-viaaa-aaaaq-aaamq-cai");
+        });
+
+        // The minimum stake for $CHAT is 400_000_000 e8s.
+        // The fee for $CHAT transactions is 100_000 e8s.
+        // These values can be obtained by calling the get_nervous_system_parameters and icrc1_fee functions.
+        switch (await sns.stake({ amount = 400_000_000 })) {
+            case (#ok result) {
+                return #ok(result);
+            };
+            case (#err result) {
+                return #err(result);
+            };
+        };
+    };
+
+    public func list_sns_neurons() : async [NeuroTypes.SnsNeuronInformation] {
+        let sns = SNS.SNS({
+            canister_id = Principal.fromActor(thisCanister);
+            sns_canister_id = Principal.fromText("2jvtu-yqaaa-aaaaq-aaama-cai");
+            sns_ledger_canister_id = Principal.fromText("2ouva-viaaa-aaaaq-aaamq-cai");
+        });
+
+        return await sns.listNeurons();
+    };
+
+    ///////////////////////////////////
+    /// ICP Neuron Staking Example: ///
+    ///////////////////////////////////
+
+    // TODO
+
     //////////////////////////////////////////
     /// Example canister wallet functions: ///
     //////////////////////////////////////////
@@ -50,46 +91,4 @@ actor class Test() = thisCanister {
 
         return { chat_balance = chatBalance; icp_balance = icpBalance };
     };
-
-    ///////////////////////////////////
-    /// SNS Neuron Staking Example: ///
-    ///////////////////////////////////
-
-    stable var _snsneuron : ?NeuroTypes.SnsNeuronId = null;
-
-    public func stake_sns_neuron() : async Result.Result<Blob, Text> {
-        // OpenChat SNS configuration:
-        let sns = SNS.SNS({
-            canister_id = Principal.fromActor(thisCanister);
-            sns_canister_id = Principal.fromText("2jvtu-yqaaa-aaaaq-aaama-cai");
-            sns_ledger_canister_id = Principal.fromText("2ouva-viaaa-aaaaq-aaamq-cai");
-        });
-
-        switch (await sns.stake({ amount = 10_000 })) {
-            case (#ok result) {
-                _snsneuron := ?result;
-                return #ok(result);
-            };
-            case (#err result) {
-                return #err(result);
-            };
-        };
-    };
-
-    public func get_sns_neuron_information() : async Result.Result<NeuroTypes.SnsNeuronInformation, Text> {
-        let ?snsneuron = _snsneuron else return #err("SNS neuron id not found");
-
-        let neuron = SNS.Neuron({
-            neuron_id = snsneuron;
-            sns_canister_id = Principal.fromText("2jvtu-yqaaa-aaaaq-aaama-cai");
-        });
-
-        return await neuron.getInformation();
-    };
-
-    ///////////////////////////////////
-    /// ICP Neuron Staking Example: ///
-    ///////////////////////////////////
-
-    // TODO
 };

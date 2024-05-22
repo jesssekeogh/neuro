@@ -4,6 +4,8 @@ import Nat64 "mo:base/Nat64";
 import Nat32 "mo:base/Nat32";
 import Tools "../tools";
 import Types "../types";
+import Blob "mo:base/Blob";
+import Binary "mo:encoding/Binary";
 import SnsLedgerInterface "../interfaces/sns_ledger_interface";
 import SnsGovernanceInterface "../interfaces/sns_interface";
 
@@ -23,18 +25,28 @@ module {
             // generate a random nonce that fits into Nat64
             let ?nonce = Random.Finite(await Random.blob()).range(64) else return #err("Failed to generate nonce");
 
+            let convertedNonce = Nat64.fromNat(nonce);
+
             // controller is the canister
             let neuronController : Principal = canister_id;
 
             // neurons subaccounts contain random nonces so one controller can have many neurons
-            let newSubaccount : Blob = Tools.computeNeuronStakingSubaccountBytes(neuronController, Nat64.fromNat(nonce));
+            let newSubaccount : Blob = Tools.computeNeuronStakingSubaccountBytes(neuronController, convertedNonce);
 
-            switch (await SnsLedger.icrc1_transfer({ to = { owner = sns_canister_id; subaccount = ?newSubaccount }; fee = null; memo = null; from_subaccount = null; created_at_time = null; amount = amount })) {
+            // convert the memo to blob for the icrc standard
+            let memo = convertedNonce |> Binary.BigEndian.fromNat64(_) |> Blob.fromArray(_);
+
+            switch (await SnsLedger.icrc1_transfer({ to = { owner = sns_canister_id; subaccount = ?newSubaccount }; fee = null; memo = ?memo; from_subaccount = null; created_at_time = null; amount = amount })) {
                 case (#Ok _) {
                     // ClaimOrRefresh: finds the neuron and claims it
                     let { command } = await SnsGovernance.manage_neuron({
                         subaccount = newSubaccount;
-                        command = ? #ClaimOrRefresh({ by = ? #NeuronId({}) });
+                        command = ? #ClaimOrRefresh({
+                            by = ? #MemoAndController({
+                                controller = ?neuronController;
+                                memo = convertedNonce;
+                            });
+                        });
                     });
 
                     let ?commandList = command else return #err("Failed to claim new neuron");
@@ -68,7 +80,10 @@ module {
         };
     };
 
-    public class Neuron({ neuron_id : Types.SnsNeuronId; sns_canister_id : Principal }) {
+    public class Neuron({
+        neuron_id : Types.SnsNeuronId;
+        sns_canister_id : Principal;
+    }) {
 
         let SnsGovernance = actor (Principal.toText(sns_canister_id)) : SnsGovernanceInterface.Self;
 
