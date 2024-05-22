@@ -21,7 +21,7 @@ module {
 
         let SnsGovernance = actor (Principal.toText(sns_canister_id)) : SnsGovernanceInterface.Self;
 
-        public func stake({ amount : Nat }) : async Types.SnsStakeNeuronResult {
+        public func stake({ amount_e8s : Nat }) : async Types.SnsStakeNeuronResult {
             // generate a random nonce that fits into Nat64
             let ?nonce = Random.Finite(await Random.blob()).range(64) else return #err("Failed to generate nonce");
 
@@ -36,7 +36,7 @@ module {
             // convert the memo to blob for the icrc standard
             let memo = convertedNonce |> Binary.BigEndian.fromNat64(_) |> Blob.fromArray(_);
 
-            switch (await SnsLedger.icrc1_transfer({ to = { owner = sns_canister_id; subaccount = ?newSubaccount }; fee = null; memo = ?memo; from_subaccount = null; created_at_time = null; amount = amount })) {
+            switch (await SnsLedger.icrc1_transfer({ to = { owner = sns_canister_id; subaccount = ?newSubaccount }; fee = null; memo = ?memo; from_subaccount = null; created_at_time = null; amount = amount_e8s })) {
                 case (#Ok _) {
                     // ClaimOrRefresh: finds the neuron and claims it
                     let { command } = await SnsGovernance.manage_neuron({

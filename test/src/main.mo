@@ -37,7 +37,7 @@ actor class Test() = thisCanister {
         // The minimum stake for $CHAT is 400_000_000 e8s.
         // The fee for $CHAT transactions is 100_000 e8s.
         // These values can be obtained by calling the get_nervous_system_parameters and icrc1_fee functions.
-        switch (await sns.stake({ amount = 400_000_000 })) {
+        switch (await sns.stake({ amount_e8s = 400_000_000 })) {
             case (#ok result) {
                 return #ok(result);
             };

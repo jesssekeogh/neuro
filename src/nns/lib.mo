@@ -19,7 +19,7 @@ module {
 
     let IcpGovernance = actor (Principal.toText(nns_canister_id)) : IcpGovernanceInterface.Self;
 
-    public func stake({ amount : Nat64 }) : async Types.NnsStakeNeuronResult {
+    public func stake({ amount_e8s : Nat64 }) : async Types.NnsStakeNeuronResult {
       // generate a random nonce that fits into Nat64
       let ?nonce = Random.Finite(await Random.blob()).range(64) else return #err("Failed to generate nonce");
 
@@ -34,7 +34,7 @@ module {
       // the neuron account ID is a sub account of the governance canister
       let newNeuronAccount : Blob = AccountIdentifier.accountIdentifier(nns_canister_id, newSubaccount);
 
-      switch (await IcpLedger.transfer({ memo = convertedNonce; from_subaccount = null; to = newNeuronAccount; amount = { e8s = amount }; fee = { e8s = 10_000 }; created_at_time = null })) {
+      switch (await IcpLedger.transfer({ memo = convertedNonce; from_subaccount = null; to = newNeuronAccount; amount = { e8s = amount_e8s }; fee = { e8s = 10_000 }; created_at_time = null })) {
         case (#Ok _) {
           // ClaimOrRefresh: finds the neuron by subaccount and checks if the memo matches the nonce
           let { command } = await IcpGovernance.manage_neuron({
