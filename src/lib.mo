@@ -3,7 +3,8 @@ import S "./sns";
 
 module {
     
-    public let NNS = N;
+    // TODO: Allow when canisters can control nns neurons:
+    // public let NNS = N;
 
     public let SNS = S;
 

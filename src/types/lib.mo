@@ -4,13 +4,15 @@ import SnsGovernanceInterface "../interfaces/sns_interface";
 
 module {
 
+    // result types for commands and configuration are bare bones
+    // only the error is shown, handle the ok result how you want in your code
     public type Result<X, Y> = Result.Result<X, Y>;
 
     public type ConfigureResult = Result<(), Text>;
 
     public type CommandResult = Result<(), Text>;
 
-    // nns:
+    // nns types:
 
     public type NnsNeuronId = Nat64;
 
@@ -26,10 +28,14 @@ module {
 
     public type NnsCommand = IcpGovernanceInterface.Command;
 
+    // as a helper both NeuronInfo and Neuron are combined in this package
+    // NeuronInfo has information not included in Neuron such as "state"
     public type NnsNeuronInformation = IcpGovernanceInterface.NeuronInfo and IcpGovernanceInterface.Neuron;
 
-    // sns:
+    // sns types:
 
+    // SNS neuronIds are blobs and hex encoded on UI's
+    // The id's also represent the subaccount (owner is the governance canister) in which the tokens are sent 
     public type SnsNeuronId = Blob;
 
     public type SnsStakeNeuronResult = Result<SnsNeuronId, Text>;

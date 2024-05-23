@@ -1,4 +1,4 @@
-import { NNS; SNS } "../../src";
+import { SNS } "../../src";
 import NeuroTypes "../../src/types";
 
 // in production you can use destructuring assignment syntax like:
@@ -133,4 +133,5 @@ actor class Test() = thisCanister {
 
         return { chat_balance = chatBalance; icp_balance = icpBalance };
     };
+    
 };

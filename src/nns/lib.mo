@@ -7,7 +7,16 @@ import AccountIdentifier "mo:account-identifier";
 import IcpLedgerInterface "../interfaces/icp_ledger_interface";
 import IcpGovernanceInterface "../interfaces/nns_interface";
 
+// The NNS was developed first and is older than the SNS.
+// There are differences in how some of the functions and types are structured.
+// Therefore, note that this does not match the format and layout of the SNS governance and neuron classes in this package.
+// However, the interfaces are largely similar.
+
 module {
+
+  /////////////////////////////
+  /// NNS Governance Class: ///
+  /////////////////////////////
 
   public class Governance({
     canister_id : Principal;
@@ -19,6 +28,7 @@ module {
 
     let IcpGovernance = actor (Principal.toText(nns_canister_id)) : IcpGovernanceInterface.Self;
 
+    // the nns stake function uses the legacy icp ledger tranfer and memo
     public func stake({ amount_e8s : Nat64 }) : async Types.NnsStakeNeuronResult {
       // generate a random nonce that fits into Nat64
       let ?nonce = Random.Finite(await Random.blob()).range(64) else return #err("Failed to generate nonce");
@@ -30,7 +40,7 @@ module {
 
       // neurons subaccounts contain random nonces so one controller can have many neurons
       let newSubaccount : Blob = Tools.computeNeuronStakingSubaccountBytes(neuronController, convertedNonce);
-      
+
       // the neuron account ID is a sub account of the governance canister
       let newNeuronAccount : Blob = AccountIdentifier.accountIdentifier(nns_canister_id, newSubaccount);
 
@@ -68,6 +78,7 @@ module {
       };
     };
 
+    // returns the neurons that the canister controls
     public func getNeuronIds() : async [Types.NnsNeuronId] {
       return await IcpGovernance.get_neuron_ids();
     };
@@ -80,6 +91,10 @@ module {
       });
     };
   };
+
+  /////////////////////////
+  /// NNS Neuron Class: ///
+  /////////////////////////
 
   public class Neuron({
     neuron_id : Types.NnsNeuronId;
@@ -261,6 +276,8 @@ module {
 
       let ?commandList = command else return #err("Failed to execute neuron command. Neuron ID: " # debug_show neuron_id);
 
+      // only check for an error, every other result is presumed okay
+      // a trap would not be included in the "_" and still fail
       switch (commandList) {
         case (#Error error) {
           return #err("Command failed: " # debug_show error);
