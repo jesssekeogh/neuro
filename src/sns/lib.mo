@@ -171,11 +171,14 @@ module {
             };
         };
 
-        public func disburse({ to_account : Types.SnsAccount }) : async Types.CommandResult {
+        public func disburse({
+            to_account : Types.SnsAccount;
+            amount_e8s : Nat64;
+        }) : async Types.CommandResult {
             return await manageNeuronCommand(
                 #Disburse({
                     to_account = ?to_account;
-                    amount = null; // defaults to 100%
+                    amount = ?{ e8s = amount_e8s };
                 })
             );
         };
@@ -269,7 +272,7 @@ module {
 
             let ?commandList = command else return #err("Failed to execute neuron command. Neuron ID: " # debug_show neuron_id);
 
-            // only check for an error, every other result is presumed okay 
+            // only check for an error, every other result is presumed okay
             // a trap would not be included in the "_" and still fail
             switch (commandList) {
                 case (#Error error) {

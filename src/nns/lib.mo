@@ -160,11 +160,11 @@ module {
       );
     };
 
-    public func disburse({ to_account : [Nat8] }) : async Types.CommandResult {
+    public func disburse({ to_account : [Nat8]; amount_e8s : Nat64 }) : async Types.CommandResult {
       return await manageNeuronCommand(
         #Disburse({
           to_account = ?{ hash = to_account };
-          amount = null; // defaults to 100%
+          amount = ?{ e8s = amount_e8s };
         })
       );
     };
