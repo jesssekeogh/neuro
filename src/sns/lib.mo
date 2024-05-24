@@ -172,13 +172,13 @@ module {
         };
 
         public func disburse({
-            to_account : Types.SnsAccount;
-            amount_e8s : Nat64;
+            to_account : ?Types.SnsAccount;
+            amount : ?{ e8s : Nat64 };
         }) : async Types.CommandResult {
             return await manageNeuronCommand(
                 #Disburse({
-                    to_account = ?to_account;
-                    amount = ?{ e8s = amount_e8s };
+                    to_account = to_account;
+                    amount = amount;
                 })
             );
         };
