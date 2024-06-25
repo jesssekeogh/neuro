@@ -1,4 +1,4 @@
-import { SNS } "../../src";
+import { NNS; SNS } "../../src";
 import NeuroTypes "../../src/types";
 
 // in production you can use destructuring assignment syntax like:
@@ -22,6 +22,72 @@ actor class Test() = thisCanister {
 
     let ICP_GOVERNANCE = "rrkah-fqaaa-aaaaa-aaaaq-cai";
     let ICP_LEDGER = "ryjl3-tyaaa-aaaaa-aaaba-cai";
+
+    ///////////////////////////////////
+    /// NNS Neuron Staking Example: ///
+    ///////////////////////////////////
+
+    public func stake_nns_neuron() : async Result.Result<Nat64, Text> {
+        let nns = NNS.Governance({
+            canister_id = Principal.fromActor(thisCanister);
+            nns_canister_id = Principal.fromText(ICP_GOVERNANCE);
+            icp_ledger_canister_id = Principal.fromText(ICP_LEDGER);
+        });
+
+        // The minimum stake is 1 ICP.
+        switch (await nns.stake({ amount_e8s = 100_000_000 })) {
+            case (#ok result) {
+                return #ok(result);
+            };
+            case (#err result) {
+                return #err(result);
+            };
+        };
+    };
+
+    public func list_nns_neurons() : async NeuroTypes.NnsListNeuronsResponse {
+        let nns = NNS.Governance({
+            canister_id = Principal.fromActor(thisCanister);
+            nns_canister_id = Principal.fromText(ICP_GOVERNANCE);
+            icp_ledger_canister_id = Principal.fromText(ICP_LEDGER);
+        });
+
+        return await nns.listNeurons({ neuronIds = [] });
+    };
+
+    public func get_nns_neuron_information() : async NeuroTypes.NnsInformationResult {
+        let { full_neurons } = await list_nns_neurons();
+
+        if (full_neurons.size() > 0) {
+            let ?{ id } = full_neurons[0].id else return #err("Neuron id not found");
+
+            let neuron = NNS.Neuron({
+                neuron_id = id;
+                nns_canister_id = Principal.fromText(ICP_GOVERNANCE);
+            });
+
+            return await neuron.getInformation();
+        };
+
+        return #err("No neurons found");
+    };
+
+    public func split_nns_neuron() : async NeuroTypes.NnsSpawnResult {
+        let { full_neurons } = await list_nns_neurons();
+
+        if (full_neurons.size() > 0) {
+            let ?{ id } = full_neurons[0].id else return #err("Neuron id not found");
+
+            let neuron = NNS.Neuron({
+                neuron_id = id;
+                nns_canister_id = Principal.fromText(ICP_GOVERNANCE);
+            });
+
+            return await neuron.split({ amount_e8s = 100_010_000 });
+        };
+
+        return #err("No neurons found");
+    };
 
     ///////////////////////////////////
     /// SNS Neuron Staking Example: ///
@@ -94,12 +160,6 @@ actor class Test() = thisCanister {
         return #err("No neurons found");
     };
 
-    ///////////////////////////////////
-    /// ICP Neuron Staking Example: ///
-    ///////////////////////////////////
-
-    // TODO When canisters can control neurons
-
     //////////////////////////////////////////
     /// Example canister wallet functions: ///
     //////////////////////////////////////////
@@ -133,5 +193,5 @@ actor class Test() = thisCanister {
 
         return { chat_balance = chatBalance; icp_balance = icpBalance };
     };
-    
+
 };
