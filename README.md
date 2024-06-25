@@ -13,8 +13,8 @@ This package is a work in progress and has not undergone extensive testing. It i
 - Enables staking neurons in canisters with a single line of code ✅
 - Interfaces for interacting with the governance frameworks ✅
 - Interfaces for interacting with neurons ✅
-- Stake neurons on the NNS ❌ (Available, pending protocol implementation)
-- Control neurons on the NNS ❌ (Available, pending protocol implementation)
+- Stake neurons on the NNS ✅
+- Control neurons on the NNS ✅
 - Stake neurons on the SNS ✅
 - Control neurons on the SNS ✅
 
@@ -28,6 +28,51 @@ mops add neuro
 ```
 
 ## Usage
+
+NNS example:
+
+```motoko
+
+...
+
+import { NNS } "mo:neuro";
+import NeuroTypes "mo:neuro/types";
+
+...
+
+// Stake a neuron on the NNS:
+public func stake_nns_neuron() : async Result.Result<Nat64, Text> {
+  let nns = NNS.Governance({
+    canister_id = Principal.fromActor(thisCanister);
+    nns_canister_id = Principal.fromText("rrkah-fqaaa-aaaaa-aaaaq-cai");
+    icp_ledger_canister_id = Principal.fromText("ryjl3-tyaaa-aaaaa-aaaba-cai");
+  });
+
+  switch (await nns.stake({ amount_e8s = 100_000_000 })) {
+    case (#ok result) {
+      return #ok(result);
+    };
+    case (#err result) {
+      return #err(result);
+    };
+  };
+};
+
+...
+
+// Interact with the neuron
+public func get_nns_neuron_information(id: Nat64) : async NeuroTypes.NnsInformationResult {
+  let neuron = NNS.Neuron({
+    neuron_id = id;
+    nns_canister_id = Principal.fromText("rrkah-fqaaa-aaaaa-aaaaq-cai");
+  });
+
+  return await neuron.getInformation();
+};
+
+...
+
+```
 
 SNS example:
 
@@ -61,7 +106,7 @@ public func stake_sns_neuron() : async Result.Result<Blob, Text> {
 ...
 
 // Interact with the neuron
-public func get_sns_neuron_information(id: Blob) : async Result.Result<NeuroTypes.SnsNeuronInformation, Text> {
+public func get_sns_neuron_information(id: Blob) : async NeuroTypes.SnsNeuronInformation {
   let neuron = SNS.Neuron({
     neuron_id = id;
     sns_canister_id = Principal.fromText("2jvtu-yqaaa-aaaaq-aaama-cai");
