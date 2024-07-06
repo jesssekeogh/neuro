@@ -87,7 +87,7 @@ module {
     public func listNeurons({ neuronIds : [Types.NnsNeuronId] }) : async Types.NnsListNeuronsResponse {
       return await IcpGovernance.list_neurons({
         neuron_ids = neuronIds;
-        include_neurons_readable_by_caller = true;
+        include_neurons_readable_by_caller = false;
       });
     };
   };
