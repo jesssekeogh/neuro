@@ -52,7 +52,7 @@ actor class Test() = thisCanister {
             icp_ledger_canister_id = Principal.fromText(ICP_LEDGER);
         });
 
-        return await nns.listNeurons({ neuronIds = [] });
+        return await nns.listNeurons({ neuronIds = []; readable = true });
     };
 
     public func get_nns_neuron_information() : async NeuroTypes.NnsInformationResult {

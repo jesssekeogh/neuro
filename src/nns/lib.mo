@@ -84,10 +84,10 @@ module {
     };
 
     // If an array of neuron IDs is provided, precisely those neurons will be fetched.
-    public func listNeurons({ neuronIds : [Types.NnsNeuronId] }) : async Types.NnsListNeuronsResponse {
+    public func listNeurons({ neuronIds : [Types.NnsNeuronId]; readable : Bool }) : async Types.NnsListNeuronsResponse {
       return await IcpGovernance.list_neurons({
         neuron_ids = neuronIds;
-        include_neurons_readable_by_caller = false;
+        include_neurons_readable_by_caller = readable;
       });
     };
   };
