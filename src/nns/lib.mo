@@ -78,6 +78,36 @@ module {
       };
     };
 
+    // if you want to generate your own nonces or transfer ICP from somewhere else, this is useful
+    public func claimNeuron({ nonce : Nat64 }) : async Types.NnsStakeNeuronResult {
+      let neuronController : Principal = canister_id;
+
+      let { command } = await IcpGovernance.manage_neuron({
+        id = null;
+        neuron_id_or_subaccount = null;
+        command = ? #ClaimOrRefresh({
+          by = ? #MemoAndController({
+            controller = ?neuronController;
+            memo = nonce;
+          });
+        });
+      });
+
+      let ?commandList = command else return #err("Failed to claim new neuron");
+
+      switch (commandList) {
+        case (#ClaimOrRefresh { refreshed_neuron_id }) {
+
+          let ?{ id } = refreshed_neuron_id else return #err("Failed to retrieve new neuron Id");
+
+          return #ok(id);
+        };
+        case _ {
+          return #err("Failed to stake. " # debug_show commandList);
+        };
+      };
+    };
+
     // returns the neurons that the canister controls
     public func getNeuronIds() : async [Types.NnsNeuronId] {
       return await IcpGovernance.get_neuron_ids();

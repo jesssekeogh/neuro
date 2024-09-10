@@ -73,6 +73,36 @@ module {
             };
         };
 
+        public func claimNeuron({ nonce : Nat64 }) : async Types.SnsStakeNeuronResult {
+            let neuronController : Principal = canister_id;
+
+            let newSubaccount : Blob = Tools.computeNeuronStakingSubaccountBytes(neuronController, nonce);
+
+            let { command } = await SnsGovernance.manage_neuron({
+                subaccount = newSubaccount;
+                command = ? #ClaimOrRefresh({
+                    by = ? #MemoAndController({
+                        controller = ?neuronController;
+                        memo = nonce;
+                    });
+                });
+            });
+
+            let ?commandList = command else return #err("Failed to claim new neuron");
+
+            switch (commandList) {
+                case (#ClaimOrRefresh { refreshed_neuron_id }) {
+
+                    let ?{ id } = refreshed_neuron_id else return #err("Failed to retrieve new neuron Id");
+
+                    return #ok(id);
+                };
+                case _ {
+                    return #err("Failed to stake. " # debug_show commandList);
+                };
+            };
+        };
+
         // returns the neurons that the canister controls
         public func listNeurons() : async [Types.SnsNeuronInformation] {
             let { neurons } = await SnsGovernance.list_neurons({
