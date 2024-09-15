@@ -266,6 +266,16 @@ module {
             );
         };
 
+        public func setDissolveTimestamp({
+            dissolve_timestamp_seconds : Nat64;
+        }) : async Types.ConfigureResult {
+            return await manageNeuronConfiguration(
+                #SetDissolveTimestamp({
+                    dissolve_timestamp_seconds = dissolve_timestamp_seconds;
+                })
+            );
+        };
+
         public func startDissolving() : async Types.ConfigureResult {
             return await manageNeuronConfiguration(
                 #StartDissolving({})
