@@ -35,7 +35,7 @@ actor class Test() = thisCanister {
         });
 
         // The minimum stake is 1 ICP.
-        switch (await nns.stake({ amount_e8s = 100_000_000 })) {
+        switch (await* nns.stake({ amount_e8s = 100_000_000 })) {
             case (#ok result) {
                 return #ok(result);
             };
@@ -52,7 +52,7 @@ actor class Test() = thisCanister {
             icp_ledger_canister_id = Principal.fromText(ICP_LEDGER);
         });
 
-        return await nns.listNeurons({ neuronIds = []; readable = true });
+        return await* nns.listNeurons({ neuronIds = []; readable = true });
     };
 
     public func get_nns_neuron_information() : async NeuroTypes.NnsInformationResult {
@@ -66,27 +66,27 @@ actor class Test() = thisCanister {
                 nns_canister_id = Principal.fromText(ICP_GOVERNANCE);
             });
 
-            return await neuron.getInformation();
+            return await* neuron.getInformation();
         };
 
         return #err("No neurons found");
     };
 
-    public func split_nns_neuron() : async NeuroTypes.NnsSpawnResult {
+    public func add_nns_neuron_hotkey({ hotkey : Principal }) : async NeuroTypes.ConfigureResult {
         let { full_neurons } = await list_nns_neurons();
 
         if (full_neurons.size() > 0) {
-            let ?{ id } = full_neurons[0].id else return #err("Neuron id not found");
+            let ?{ id } = full_neurons[0].id else return #err(null);
 
             let neuron = NNS.Neuron({
                 neuron_id = id;
                 nns_canister_id = Principal.fromText(ICP_GOVERNANCE);
             });
 
-            return await neuron.split({ amount_e8s = 100_010_000 });
+            return await* neuron.addHotKey({ new_hot_key = hotkey });
         };
 
-        return #err("No neurons found");
+        return #err(null);
     };
 
     ///////////////////////////////////
@@ -103,7 +103,7 @@ actor class Test() = thisCanister {
         // The minimum stake for $CHAT is 400_000_000 e8s.
         // The fee for $CHAT transactions is 100_000 e8s.
         // These values can be obtained by calling the get_nervous_system_parameters and icrc1_fee functions.
-        switch (await sns.stake({ amount_e8s = 400_000_000 })) {
+        switch (await* sns.stake({ amount_e8s = 400_000_000 })) {
             case (#ok result) {
                 return #ok(result);
             };
@@ -120,7 +120,7 @@ actor class Test() = thisCanister {
             sns_ledger_canister_id = Principal.fromText(OPENCHAT_LEDGER);
         });
 
-        return await sns.listNeurons();
+        return await* sns.listNeurons();
     };
 
     public func get_sns_neuron_information() : async Result.Result<NeuroTypes.SnsNeuronInformation, Text> {
@@ -137,24 +137,7 @@ actor class Test() = thisCanister {
                 sns_canister_id = Principal.fromText(OPENCHAT_SNS);
             });
 
-            return await neuron.getInformation();
-        };
-
-        return #err("No neurons found");
-    };
-
-    public func split_sns_neuron() : async Result.Result<NeuroTypes.SnsNeuronId, Text> {
-        let neurons = await list_sns_neurons();
-
-        if (neurons.size() > 0) {
-            let ?{ id } = neurons[0].id else return #err("Neuron id not found");
-
-            let neuron = SNS.Neuron({
-                neuron_id = id;
-                sns_canister_id = Principal.fromText(OPENCHAT_SNS);
-            });
-
-            return await neuron.split({ amount_e8s = 400_100_000 });
+            return await* neuron.getInformation();
         };
 
         return #err("No neurons found");

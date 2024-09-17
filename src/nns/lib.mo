@@ -28,8 +28,12 @@ module {
 
     let IcpGovernance = actor (Principal.toText(nns_canister_id)) : IcpGovernanceInterface.Self;
 
-    // the nns stake function uses the legacy icp ledger tranfer and memo
-    public func stake({ amount_e8s : Nat64 }) : async Types.NnsStakeNeuronResult {
+    // Helper function that performs the necessary operations to stake a neuron in a canister.
+    // It is not recommended to use this function in production, as failures may occur.
+    // This is provided for demonstration purposes only.
+    // Instead, use your own staking flow and refer to the claimNeuron function below.
+    // Note: The NNS staking function relies on the legacy ICP ledger transfer and memo.
+    public func stake({ amount_e8s : Nat64 }) : async* Types.NnsStakeNeuronResult {
       // generate a random nonce that fits into Nat64
       let ?nonce = Random.Finite(await Random.blob()).range(64) else return #err("Failed to generate nonce");
 
@@ -79,7 +83,7 @@ module {
     };
 
     // if you want to generate your own nonces or transfer ICP from somewhere else, this is useful
-    public func claimNeuron({ nonce : Nat64 }) : async Types.NnsStakeNeuronResult {
+    public func claimNeuron({ nonce : Nat64 }) : async* Types.NnsSpawnResult {
       let neuronController : Principal = canister_id;
 
       let { command } = await IcpGovernance.manage_neuron({
@@ -93,28 +97,31 @@ module {
         });
       });
 
-      let ?commandList = command else return #err("Failed to claim new neuron");
+      let ?commandList = command else return #err(null);
 
       switch (commandList) {
         case (#ClaimOrRefresh { refreshed_neuron_id }) {
 
-          let ?{ id } = refreshed_neuron_id else return #err("Failed to retrieve new neuron Id");
+          let ?{ id } = refreshed_neuron_id else return #err(null);
 
           return #ok(id);
         };
+        case (#Error(error)) {
+          return #err(?error);
+        };
         case _ {
-          return #err("Failed to stake. " # debug_show commandList);
+          return #err(null);
         };
       };
     };
 
     // returns the neurons that the canister controls
-    public func getNeuronIds() : async [Types.NnsNeuronId] {
+    public func getNeuronIds() : async* [Types.NnsNeuronId] {
       return await IcpGovernance.get_neuron_ids();
     };
 
     // If an array of neuron IDs is provided, precisely those neurons will be fetched.
-    public func listNeurons({ neuronIds : [Types.NnsNeuronId]; readable : Bool }) : async Types.NnsListNeuronsResponse {
+    public func listNeurons({ neuronIds : [Types.NnsNeuronId]; readable : Bool }) : async* Types.NnsListNeuronsResponse {
       return await IcpGovernance.list_neurons({
         neuron_ids = neuronIds;
         include_neurons_readable_by_caller = readable;
@@ -133,7 +140,7 @@ module {
 
     let IcpGovernance = actor (Principal.toText(nns_canister_id)) : IcpGovernanceInterface.Self;
 
-    public func getInformation() : async Types.NnsInformationResult {
+    public func getInformation() : async* Types.NnsInformationResult {
       switch (await IcpGovernance.get_neuron_info(neuron_id), await IcpGovernance.get_full_neuron(neuron_id)) {
         case (#Ok neuronInfo, #Ok neuron) {
           return #ok({
@@ -172,8 +179,8 @@ module {
     public func spawn({
       percentage_to_spawn : ?Nat32;
       new_controller : ?Principal;
-    }) : async Types.NnsSpawnResult {
-      return await manageNeuronSpawn(
+    }) : async* Types.NnsSpawnResult {
+      return await* manageNeuronSpawn(
         #Spawn({
           percentage_to_spawn = percentage_to_spawn;
           new_controller = new_controller;
@@ -182,8 +189,8 @@ module {
       );
     };
 
-    public func split({ amount_e8s : Nat64 }) : async Types.NnsSpawnResult {
-      return await manageNeuronSpawn(
+    public func split({ amount_e8s : Nat64 }) : async* Types.NnsSpawnResult {
+      return await* manageNeuronSpawn(
         #Split({
           amount_e8s = amount_e8s;
         })
@@ -193,8 +200,8 @@ module {
     public func disburse({
       to_account : ?{ hash : [Nat8] };
       amount : ?{ e8s : Nat64 };
-    }) : async Types.CommandResult {
-      return await manageNeuronCommand(
+    }) : async* Types.CommandResult {
+      return await* manageNeuronCommand(
         #Disburse({
           to_account = to_account;
           amount = amount;
@@ -202,24 +209,24 @@ module {
       );
     };
 
-    public func mergeMaturity({ percentage_to_merge : Nat32 }) : async Types.CommandResult {
-      return await manageNeuronCommand(
+    public func mergeMaturity({ percentage_to_merge : Nat32 }) : async* Types.CommandResult {
+      return await* manageNeuronCommand(
         #MergeMaturity({
           percentage_to_merge = percentage_to_merge;
         })
       );
     };
 
-    public func refresh() : async Types.CommandResult {
-      return await manageNeuronCommand(
+    public func refresh() : async* Types.CommandResult {
+      return await* manageNeuronCommand(
         #ClaimOrRefresh({
           by = ? #NeuronIdOrSubaccount({});
         })
       );
     };
 
-    public func registerVote({ vote : Int32; proposal : Types.NnsNeuronId }) : async Types.CommandResult {
-      return await manageNeuronCommand(
+    public func registerVote({ vote : Int32; proposal : Types.NnsNeuronId }) : async* Types.CommandResult {
+      return await* manageNeuronCommand(
         #RegisterVote({
           vote = vote;
           proposal = ?{ id = proposal };
@@ -227,8 +234,8 @@ module {
       );
     };
 
-    public func follow({ topic : Int32; followee : Types.NnsNeuronId }) : async Types.CommandResult {
-      return await manageNeuronCommand(
+    public func follow({ topic : Int32; followee : Types.NnsNeuronId }) : async* Types.CommandResult {
+      return await* manageNeuronCommand(
         #Follow({
           topic = topic;
           followees = [{ id = followee }];
@@ -236,8 +243,8 @@ module {
       );
     };
 
-    public func clearFollowees({ topic : Int32 }) : async Types.CommandResult {
-      return await manageNeuronCommand(
+    public func clearFollowees({ topic : Int32 }) : async* Types.CommandResult {
+      return await* manageNeuronCommand(
         #Follow({
           topic = topic;
           followees = [];
@@ -247,8 +254,8 @@ module {
 
     public func increaseDissolveDelay({
       additional_dissolve_delay_seconds : Nat32;
-    }) : async Types.ConfigureResult {
-      return await manageNeuronConfiguration(
+    }) : async* Types.ConfigureResult {
+      return await* manageNeuronConfiguration(
         #IncreaseDissolveDelay({
           additional_dissolve_delay_seconds = additional_dissolve_delay_seconds;
         })
@@ -257,102 +264,105 @@ module {
 
     public func setDissolveTimestamp({
       dissolve_timestamp_seconds : Nat64;
-    }) : async Types.ConfigureResult {
-      return await manageNeuronConfiguration(
+    }) : async* Types.ConfigureResult {
+      return await* manageNeuronConfiguration(
         #SetDissolveTimestamp({
           dissolve_timestamp_seconds = dissolve_timestamp_seconds;
         })
       );
     };
 
-    public func startDissolving() : async Types.ConfigureResult {
-      return await manageNeuronConfiguration(
+    public func startDissolving() : async* Types.ConfigureResult {
+      return await* manageNeuronConfiguration(
         #StartDissolving({})
       );
     };
 
-    public func stopDissolving() : async Types.ConfigureResult {
-      return await manageNeuronConfiguration(
+    public func stopDissolving() : async* Types.ConfigureResult {
+      return await* manageNeuronConfiguration(
         #StopDissolving({})
       );
     };
 
-    public func addHotKey({ new_hot_key : Principal }) : async Types.ConfigureResult {
-      return await manageNeuronConfiguration(
+    public func addHotKey({ new_hot_key : Principal }) : async* Types.ConfigureResult {
+      return await* manageNeuronConfiguration(
         #AddHotKey({
           new_hot_key = ?new_hot_key;
         })
       );
     };
 
-    public func removeHotKey({ hot_key_to_remove : Principal }) : async Types.ConfigureResult {
-      return await manageNeuronConfiguration(
+    public func removeHotKey({ hot_key_to_remove : Principal }) : async* Types.ConfigureResult {
+      return await* manageNeuronConfiguration(
         #RemoveHotKey({
           hot_key_to_remove = ?hot_key_to_remove;
         })
       );
     };
 
-    private func manageNeuronConfiguration(operation : Types.NnsOperation) : async Types.ConfigureResult {
+    private func manageNeuronConfiguration(operation : Types.NnsOperation) : async* Types.ConfigureResult {
       let { command } = await IcpGovernance.manage_neuron({
         id = ?{ id = neuron_id };
         neuron_id_or_subaccount = null;
         command = ? #Configure({ operation = ?operation });
       });
 
-      let ?commandList = command else return #err("Failed to configure neuron. Neuron ID: " # debug_show neuron_id);
+      let ?commandList = command else return #err(null);
 
+      // only check for an error, every other result is presumed okay
+      // a trap would not be included in the "_" and still fail
       switch (commandList) {
-        case (#Configure _) { return #ok() };
-        case _ {
-          return #err("Configuration failed: " # debug_show commandList);
+        case (#Error(error)) {
+          return #err(?error);
         };
+        case (_) { return #ok() };
       };
     };
 
-    private func manageNeuronCommand(neuronCommand : Types.NnsCommand) : async Types.CommandResult {
+    private func manageNeuronCommand(neuronCommand : Types.NnsCommand) : async* Types.CommandResult {
       let { command } = await IcpGovernance.manage_neuron({
         id = ?{ id = neuron_id };
         neuron_id_or_subaccount = null;
         command = ?neuronCommand;
       });
 
-      let ?commandList = command else return #err("Failed to execute neuron command. Neuron ID: " # debug_show neuron_id);
+      let ?commandList = command else return #err(null);
 
-      // only check for an error, every other result is presumed okay
-      // a trap would not be included in the "_" and still fail
       switch (commandList) {
         case (#Error error) {
-          return #err("Command failed: " # debug_show error);
+          return #err(?error);
         };
         case _ { return #ok() };
       };
     };
 
-    private func manageNeuronSpawn(neuronCommand : Types.NnsCommand) : async Types.NnsSpawnResult {
+    private func manageNeuronSpawn(neuronCommand : Types.NnsCommand) : async* Types.NnsSpawnResult {
       let { command } = await IcpGovernance.manage_neuron({
         id = ?{ id = neuron_id };
         neuron_id_or_subaccount = null;
         command = ?neuronCommand;
       });
 
-      let ?commandList = command else return #err("Failed to execute neuron command. Neuron ID: " # debug_show neuron_id);
+      let ?commandList = command else return #err(null);
 
       switch (commandList) {
         case (#Spawn { created_neuron_id }) {
 
-          let ?{ id } = created_neuron_id else return #err("Failed to retrieve new neuron Id");
+          let ?{ id } = created_neuron_id else return #err(null);
 
           return #ok(id);
         };
         case (#Split { created_neuron_id }) {
 
-          let ?{ id } = created_neuron_id else return #err("Failed to retrieve new neuron Id");
+          let ?{ id } = created_neuron_id else return #err(null);
 
           return #ok(id);
         };
+        case (#Error(error)) {
+          return #err(?error);
+        };
         case _ {
-          return #err("Command failed: " # debug_show commandList);
+          return #err(null);
         };
       };
     };

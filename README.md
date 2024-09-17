@@ -17,6 +17,7 @@ This package is a work in progress and has not undergone extensive testing. It i
 - Control neurons on the NNS ✅
 - Stake neurons on the SNS ✅
 - Control neurons on the SNS ✅
+- Uses async-star computation types ✅
 
 The goal of this package is to provide the basic and necessary functions to help you stake and control neurons in canisters. It is not intended to include complex functionalities such as staking neurons on behalf of different users or trading neurons. However, you can fork or build upon this package for your own use cases.
 
@@ -48,7 +49,7 @@ public func stake_nns_neuron() : async Result.Result<Nat64, Text> {
     icp_ledger_canister_id = Principal.fromText("ryjl3-tyaaa-aaaaa-aaaba-cai");
   });
 
-  switch (await nns.stake({ amount_e8s = 100_000_000 })) {
+  switch (await* nns.stake({ amount_e8s = 100_000_000 })) {
     case (#ok result) {
       return #ok(result);
     };
@@ -67,7 +68,7 @@ public func get_nns_neuron_information(id: Nat64) : async NeuroTypes.NnsInformat
     nns_canister_id = Principal.fromText("rrkah-fqaaa-aaaaa-aaaaq-cai");
   });
 
-  return await neuron.getInformation();
+  return await* neuron.getInformation();
 };
 
 ...
@@ -93,7 +94,7 @@ public func stake_sns_neuron() : async Result.Result<Blob, Text> {
     sns_ledger_canister_id = Principal.fromText("2ouva-viaaa-aaaaq-aaamq-cai");
   });
 
-  switch (await sns.stake({ amount_e8s = 400_000_000 })) {
+  switch (await* sns.stake({ amount_e8s = 400_000_000 })) {
     case (#ok result) {
       return #ok(result);
     };
@@ -112,7 +113,7 @@ public func get_sns_neuron_information(id: Blob) : async NeuroTypes.SnsNeuronInf
     sns_canister_id = Principal.fromText("2jvtu-yqaaa-aaaaq-aaama-cai");
   });
 
-  return await neuron.getInformation();
+  return await* neuron.getInformation();
 };
 
 ...
