@@ -179,12 +179,13 @@ module {
     public func spawn({
       percentage_to_spawn : ?Nat32;
       new_controller : ?Principal;
+      nonce : ?Nat64;
     }) : async* Types.NnsSpawnResult {
       return await* manageNeuronSpawn(
         #Spawn({
           percentage_to_spawn = percentage_to_spawn;
           new_controller = new_controller;
-          nonce = null;
+          nonce = nonce;
         })
       );
     };
