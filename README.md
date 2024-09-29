@@ -64,7 +64,7 @@ public func stake_nns_neuron() : async Result.Result<Nat64, Text> {
 // Interact with the neuron
 public func get_nns_neuron_information(id: Nat64) : async NeuroTypes.NnsInformationResult {
   let neuron = NNS.Neuron({
-    neuron_id = id;
+    neuron_id_or_subaccount = #NeuronId({ id = id });
     nns_canister_id = Principal.fromText("rrkah-fqaaa-aaaaa-aaaaq-cai");
   });
 
