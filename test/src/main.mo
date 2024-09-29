@@ -62,7 +62,7 @@ actor class Test() = thisCanister {
             let ?{ id } = full_neurons[0].id else return #err("Neuron id not found");
 
             let neuron = NNS.Neuron({
-                neuron_id = id;
+                neuron_id_or_subaccount = #NeuronId({ id = id });
                 nns_canister_id = Principal.fromText(ICP_GOVERNANCE);
             });
 
@@ -79,7 +79,7 @@ actor class Test() = thisCanister {
             let ?{ id } = full_neurons[0].id else return #err(null);
 
             let neuron = NNS.Neuron({
-                neuron_id = id;
+                neuron_id_or_subaccount = #NeuronId({ id = id });
                 nns_canister_id = Principal.fromText(ICP_GOVERNANCE);
             });
 

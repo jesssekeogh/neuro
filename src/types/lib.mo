@@ -16,6 +16,8 @@ module {
 
     public type NnsNeuronId = Nat64;
 
+    public type NnsNeuronIdOrSubaccount = IcpGovernanceInterface.NeuronIdOrSubaccount;
+
     public type NnsStakeNeuronResult = Result<NnsNeuronId, Text>;
 
     public type NnsListNeuronsResponse = IcpGovernanceInterface.ListNeuronsResponse;

@@ -134,14 +134,14 @@ module {
   /////////////////////////
 
   public class Neuron({
-    neuron_id : Types.NnsNeuronId;
+    neuron_id_or_subaccount : Types.NnsNeuronIdOrSubaccount;
     nns_canister_id : Principal;
   }) {
 
     let IcpGovernance = actor (Principal.toText(nns_canister_id)) : IcpGovernanceInterface.Self;
 
     public func getInformation() : async* Types.NnsInformationResult {
-      switch (await IcpGovernance.get_neuron_info(neuron_id), await IcpGovernance.get_full_neuron(neuron_id)) {
+      switch (await IcpGovernance.get_neuron_info_by_id_or_subaccount(neuron_id_or_subaccount), await IcpGovernance.get_full_neuron_by_id_or_subaccount(neuron_id_or_subaccount)) {
         case (#Ok neuronInfo, #Ok neuron) {
           return #ok({
             age_seconds = neuronInfo.age_seconds;
@@ -303,8 +303,8 @@ module {
 
     private func manageNeuronConfiguration(operation : Types.NnsOperation) : async* Types.ConfigureResult {
       let { command } = await IcpGovernance.manage_neuron({
-        id = ?{ id = neuron_id };
-        neuron_id_or_subaccount = null;
+        id = null;
+        neuron_id_or_subaccount = ?neuron_id_or_subaccount;
         command = ? #Configure({ operation = ?operation });
       });
 
@@ -322,8 +322,8 @@ module {
 
     private func manageNeuronCommand(neuronCommand : Types.NnsCommand) : async* Types.CommandResult {
       let { command } = await IcpGovernance.manage_neuron({
-        id = ?{ id = neuron_id };
-        neuron_id_or_subaccount = null;
+        id = null;
+        neuron_id_or_subaccount = ?neuron_id_or_subaccount;
         command = ?neuronCommand;
       });
 
@@ -339,8 +339,8 @@ module {
 
     private func manageNeuronSpawn(neuronCommand : Types.NnsCommand) : async* Types.NnsSpawnResult {
       let { command } = await IcpGovernance.manage_neuron({
-        id = ?{ id = neuron_id };
-        neuron_id_or_subaccount = null;
+        id = null;
+        neuron_id_or_subaccount = ?neuron_id_or_subaccount;
         command = ?neuronCommand;
       });
 
