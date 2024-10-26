@@ -121,10 +121,17 @@ module {
     };
 
     // If an array of neuron IDs is provided, precisely those neurons will be fetched.
-    public func listNeurons({ neuronIds : [Types.NnsNeuronId]; readable : Bool }) : async* Types.NnsListNeuronsResponse {
+    public func listNeurons({
+      neuron_ids : [Types.NnsNeuronId];
+      include_readable : Bool;
+      include_empty : Bool;
+      include_public : Bool;
+    }) : async* Types.NnsListNeuronsResponse {
       return await IcpGovernance.list_neurons({
-        neuron_ids = neuronIds;
-        include_neurons_readable_by_caller = readable;
+        neuron_ids = neuron_ids;
+        include_neurons_readable_by_caller = include_readable;
+        include_public_neurons_in_full_neurons = ?include_public;
+        include_empty_neurons_readable_by_caller = ?include_empty;
       });
     };
   };
@@ -199,7 +206,7 @@ module {
     };
 
     public func disburse({
-      to_account : ?{ hash : [Nat8] };
+      to_account : ?{ hash : Blob };
       amount : ?{ e8s : Nat64 };
     }) : async* Types.CommandResult {
       return await* manageNeuronCommand(

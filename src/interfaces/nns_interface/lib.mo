@@ -1,5 +1,5 @@
 module {
-  public type AccountIdentifier = { hash : [Nat8] };
+  public type AccountIdentifier = { hash : Blob };
   public type Action = {
     #RegisterKnownNeuron : KnownNeuron;
     #ManageNeuron : ManageNeuron;
@@ -133,7 +133,9 @@ module {
   public type KnownNeuronData = { name : Text; description : ?Text };
   public type ListKnownNeuronsResponse = { known_neurons : [KnownNeuron] };
   public type ListNeurons = {
+    include_public_neurons_in_full_neurons : ?Bool;
     neuron_ids : [Nat64];
+    include_empty_neurons_readable_by_caller : ?Bool;
     include_neurons_readable_by_caller : Bool;
   };
   public type ListNeuronsResponse = {
