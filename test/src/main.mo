@@ -94,6 +94,23 @@ actor class Test() = thisCanister {
         return #err(null);
     };
 
+    public func refresh_nns_neuron_voting_power() : async NeuroTypes.CommandResult {
+        let { full_neurons } = await list_nns_neurons();
+
+        if (full_neurons.size() > 0) {
+            let ?{ id } = full_neurons[0].id else return #err(null);
+
+            let neuron = NNS.Neuron({
+                neuron_id_or_subaccount = #NeuronId({ id = id });
+                nns_canister_id = Principal.fromText(ICP_GOVERNANCE);
+            });
+
+            return await* neuron.refreshVotingPower();
+        };
+
+        return #err(null);
+    };
+
     ///////////////////////////////////
     /// SNS Neuron Staking Example: ///
     ///////////////////////////////////

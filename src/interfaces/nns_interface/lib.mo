@@ -36,6 +36,7 @@ module {
     #Spawn : Spawn;
     #Split : Split;
     #Follow : Follow;
+    #RefreshVotingPower : RefreshVotingPower;
     #ClaimOrRefresh : ClaimOrRefresh;
     #Configure : Configure;
     #RegisterVote : RegisterVote;
@@ -50,6 +51,7 @@ module {
     #Spawn : SpawnResponse;
     #Split : SpawnResponse;
     #Follow : {};
+    #RefreshVotingPower : RefreshVotingPowerResponse;
     #ClaimOrRefresh : ClaimOrRefreshResponse;
     #Configure : {};
     #RegisterVote : {};
@@ -198,6 +200,9 @@ module {
     transfer : ?NeuronStakeTransfer;
     known_neuron_data : ?KnownNeuronData;
     spawn_at_timestamp_seconds : ?Nat64;
+    voting_power_refreshed_timestamp_seconds : ?Nat64;
+    potential_voting_power : ?Nat64;
+    deciding_voting_power : ?Nat64;
   };
   public type NeuronId = { id : Nat64 };
   public type NeuronIdOrSubaccount = {
@@ -282,6 +287,8 @@ module {
     proposer : ?NeuronId;
     executed_timestamp_seconds : Nat64;
   };
+  public type RefreshVotingPower = {};
+  public type RefreshVotingPowerResponse = {};
   public type RegisterVote = { vote : Int32; proposal : ?NeuronId };
   public type RemoveHotKey = { hot_key_to_remove : ?Principal };
   public type Result = { #Ok; #Err : GovernanceError };

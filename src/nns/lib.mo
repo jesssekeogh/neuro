@@ -175,6 +175,9 @@ module {
             not_for_profit = neuron.not_for_profit;
             spawn_at_timestamp_seconds = neuron.spawn_at_timestamp_seconds;
             transfer = neuron.transfer;
+            voting_power_refreshed_timestamp_seconds = neuron.voting_power_refreshed_timestamp_seconds;
+            potential_voting_power = neuron.potential_voting_power;
+            deciding_voting_power = neuron.deciding_voting_power;
           });
         };
         case _ {
@@ -222,6 +225,12 @@ module {
         #MergeMaturity({
           percentage_to_merge = percentage_to_merge;
         })
+      );
+    };
+
+    public func refreshVotingPower() : async* Types.CommandResult {
+      return await* manageNeuronCommand(
+        #RefreshVotingPower({})
       );
     };
 
