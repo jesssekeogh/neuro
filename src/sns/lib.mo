@@ -45,8 +45,8 @@ module {
                     // ClaimOrRefresh: finds the neuron and claims it
                     let { command } = await SnsGovernance.manage_neuron({
                         subaccount = newSubaccount;
-                        command = ? #ClaimOrRefresh({
-                            by = ? #MemoAndController({
+                        command = ?#ClaimOrRefresh({
+                            by = ?#MemoAndController({
                                 controller = ?neuronController;
                                 memo = convertedNonce;
                             });
@@ -80,8 +80,8 @@ module {
 
             let { command } = await SnsGovernance.manage_neuron({
                 subaccount = newSubaccount;
-                command = ? #ClaimOrRefresh({
-                    by = ? #MemoAndController({
+                command = ?#ClaimOrRefresh({
+                    by = ?#MemoAndController({
                         controller = ?neuronController;
                         memo = nonce;
                     });
@@ -107,14 +107,29 @@ module {
         };
 
         // returns the neurons that the canister controls
-        public func listNeurons() : async* [Types.SnsNeuronInformation] {
+        public func listNeurons({
+            of_principal : ?Principal;
+            limit : Nat32;
+            start_page_at : ?{ id : Types.SnsNeuronId };
+        }) : async* [Types.SnsNeuronInformation] {
             let { neurons } = await SnsGovernance.list_neurons({
-                of_principal = ?canister_id;
-                limit = Nat32.maximumValue;
-                start_page_at = null;
+                of_principal = of_principal;
+                limit = limit;
+                start_page_at = start_page_at;
             });
 
             return neurons;
+        };
+
+        public func getNeuron(neuron : { id : Types.SnsNeuronId }) : async* Types.SnsNeuronResult {
+            let { result = ?neuronResult } = await SnsGovernance.get_neuron({
+                neuron_id = ?neuron;
+            }) else return #err(null);
+
+            switch (neuronResult) {
+                case (#Neuron(neuron)) { return #ok(neuron) };
+                case (#Error(error)) { return #err(?error) };
+            };
         };
 
         // returns the parameters of the SNS
@@ -122,6 +137,10 @@ module {
         // this varies across different SNS's so it is exposed here
         public func getParameters() : async* Types.SnsParameters {
             return await SnsGovernance.get_nervous_system_parameters(null);
+        };
+
+        public func getMetadata() : async* Types.SnsMetadata {
+            return await SnsGovernance.get_metadata({});
         };
     };
 
@@ -142,7 +161,7 @@ module {
             });
 
             switch (result) {
-                case (? #Neuron neuron) {
+                case (?#Neuron neuron) {
                     return #ok(neuron);
                 };
                 case _ {
@@ -157,7 +176,7 @@ module {
         }) : async* Types.SnsDisburseMaturityResult {
             let { command } = await SnsGovernance.manage_neuron({
                 subaccount = neuron_id;
-                command = ? #DisburseMaturity({
+                command = ?#DisburseMaturity({
                     to_account = to_account;
                     percentage_to_disburse = percentage_to_disburse;
                 });
@@ -178,7 +197,7 @@ module {
         public func split({ amount_e8s : Nat64; nonce : Nat64 }) : async* Types.SnsSplitResult {
             let { command } = await SnsGovernance.manage_neuron({
                 subaccount = neuron_id;
-                command = ? #Split({
+                command = ?#Split({
                     memo = nonce;
                     amount_e8s = amount_e8s;
                 });
@@ -222,7 +241,7 @@ module {
         public func refresh() : async* Types.CommandResult {
             return await* manageNeuronCommand(
                 #ClaimOrRefresh({
-                    by = ? #NeuronId({});
+                    by = ?#NeuronId({});
                 })
             );
         };
@@ -289,7 +308,7 @@ module {
         private func manageNeuronConfiguration(operation : Types.SnsOperation) : async* Types.ConfigureResult {
             let { command } = await SnsGovernance.manage_neuron({
                 subaccount = neuron_id;
-                command = ? #Configure({ operation = ?operation });
+                command = ?#Configure({ operation = ?operation });
             });
 
             let ?commandList = command else return #err(null);

@@ -42,10 +42,12 @@ module {
     // The id's also represent the subaccount (owner is the governance canister) in which the tokens are sent
     public type SnsNeuronId = Blob;
 
+    public type SnsNeuronResult = Result<SnsNeuronInformation, GovernanceError>;
+
     public type SnsStakeNeuronResult = Result<SnsNeuronId, Text>;
 
     public type SnsSpawnNeuronResult = Result<SnsNeuronId, GovernanceError>;
-    
+
     public type SnsNeuronInformation = SnsGovernanceInterface.Neuron;
 
     public type SnsDisburseMaturityResponse = SnsGovernanceInterface.DisburseMaturityResponse;
@@ -63,4 +65,6 @@ module {
     public type SnsCommand = SnsGovernanceInterface.Command;
 
     public type SnsParameters = SnsGovernanceInterface.NervousSystemParameters;
+
+    public type SnsMetadata = SnsGovernanceInterface.GetMetadataResponse;
 };

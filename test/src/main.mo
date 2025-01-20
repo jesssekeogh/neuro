@@ -142,7 +142,11 @@ actor class Test() = thisCanister {
             sns_ledger_canister_id = Principal.fromText(OPENCHAT_LEDGER);
         });
 
-        return await* sns.listNeurons();
+        return await* sns.listNeurons({
+            of_principal = ?Principal.fromActor(thisCanister);
+            limit = 100;
+            start_page_at = null;
+        });
     };
 
     public func get_sns_neuron_information() : async Result.Result<NeuroTypes.SnsNeuronInformation, Text> {
