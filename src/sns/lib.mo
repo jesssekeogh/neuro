@@ -73,16 +73,14 @@ module {
             };
         };
 
-        public func claimNeuron({ nonce : Nat64 }) : async* Types.SnsSpawnNeuronResult {
-            let neuronController : Principal = canister_id;
-
-            let newSubaccount : Blob = Tools.computeNeuronStakingSubaccountBytes(neuronController, nonce);
+        public func claimNeuron({ nonce : Nat64; controller : Principal }) : async* Types.SnsSpawnNeuronResult {
+            let newSubaccount : Blob = Tools.computeNeuronStakingSubaccountBytes(controller, nonce);
 
             let { command } = await SnsGovernance.manage_neuron({
                 subaccount = newSubaccount;
                 command = ?#ClaimOrRefresh({
                     by = ?#MemoAndController({
-                        controller = ?neuronController;
+                        controller = ?controller;
                         memo = nonce;
                     });
                 });
