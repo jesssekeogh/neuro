@@ -134,15 +134,20 @@ module {
   };
   public type KnownNeuronData = { name : Text; description : ?Text };
   public type ListKnownNeuronsResponse = { known_neurons : [KnownNeuron] };
+  public type NeuronSubaccount = { subaccount : Blob };
   public type ListNeurons = {
+    page_size : ?Nat64;
     include_public_neurons_in_full_neurons : ?Bool;
     neuron_ids : [Nat64];
+    page_number : ?Nat64;
     include_empty_neurons_readable_by_caller : ?Bool;
+    neuron_subaccounts : ?[NeuronSubaccount];
     include_neurons_readable_by_caller : Bool;
   };
   public type ListNeuronsResponse = {
     neuron_infos : [(Nat64, NeuronInfo)];
     full_neurons : [Neuron];
+    total_pages_available : ?Nat64;
   };
   public type ListNodeProvidersResponse = { node_providers : [NodeProvider] };
   public type ListProposalInfo = {

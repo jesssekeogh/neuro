@@ -18,6 +18,8 @@ module {
 
     public type NnsNeuronIdOrSubaccount = IcpGovernanceInterface.NeuronIdOrSubaccount;
 
+    public type NnsNeuronSubaccount = IcpGovernanceInterface.NeuronSubaccount;
+
     public type NnsStakeNeuronResult = Result<NnsNeuronId, Text>;
 
     public type NnsListNeuronsResponse = IcpGovernanceInterface.ListNeuronsResponse;

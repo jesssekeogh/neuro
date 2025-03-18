@@ -57,6 +57,9 @@ actor class Test() = thisCanister {
             include_readable = true;
             include_empty = true;
             include_public = true;
+            neuron_subaccounts = null;
+            page_number = null;
+            page_size = null;
         });
     };
 

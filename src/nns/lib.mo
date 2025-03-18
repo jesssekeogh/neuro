@@ -54,8 +54,8 @@ module {
           let { command } = await IcpGovernance.manage_neuron({
             id = null;
             neuron_id_or_subaccount = null;
-            command = ? #ClaimOrRefresh({
-              by = ? #MemoAndController({
+            command = ?#ClaimOrRefresh({
+              by = ?#MemoAndController({
                 controller = ?neuronController;
                 memo = convertedNonce;
               });
@@ -89,8 +89,8 @@ module {
       let { command } = await IcpGovernance.manage_neuron({
         id = null;
         neuron_id_or_subaccount = null;
-        command = ? #ClaimOrRefresh({
-          by = ? #MemoAndController({
+        command = ?#ClaimOrRefresh({
+          by = ?#MemoAndController({
             controller = ?neuronController;
             memo = nonce;
           });
@@ -126,12 +126,18 @@ module {
       include_readable : Bool;
       include_empty : Bool;
       include_public : Bool;
+      page_size : ?Nat64;
+      page_number : ?Nat64;
+      neuron_subaccounts : ?[Types.NnsNeuronSubaccount];
     }) : async* Types.NnsListNeuronsResponse {
       return await IcpGovernance.list_neurons({
-        neuron_ids = neuron_ids;
-        include_neurons_readable_by_caller = include_readable;
+        page_size = page_size;
         include_public_neurons_in_full_neurons = ?include_public;
+        neuron_ids = neuron_ids;
+        page_number = page_number;
         include_empty_neurons_readable_by_caller = ?include_empty;
+        neuron_subaccounts = neuron_subaccounts;
+        include_neurons_readable_by_caller = include_readable;
       });
     };
   };
@@ -237,7 +243,7 @@ module {
     public func refresh() : async* Types.CommandResult {
       return await* manageNeuronCommand(
         #ClaimOrRefresh({
-          by = ? #NeuronIdOrSubaccount({});
+          by = ?#NeuronIdOrSubaccount({});
         })
       );
     };
@@ -321,7 +327,7 @@ module {
       let { command } = await IcpGovernance.manage_neuron({
         id = null;
         neuron_id_or_subaccount = ?neuron_id_or_subaccount;
-        command = ? #Configure({ operation = ?operation });
+        command = ?#Configure({ operation = ?operation });
       });
 
       let ?commandList = command else return #err(null);
