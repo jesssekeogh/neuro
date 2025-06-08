@@ -271,6 +271,20 @@ module {
             );
         };
 
+        public func setFollowing({
+            followeesForTopic : [{
+                topic : ?Types.SnsTopics;
+                followees : [{
+                    alias : ?Text;
+                    neuron_id : ?{ id : Types.SnsNeuronId };
+                }];
+            }];
+        }) : async* Types.CommandResult {
+            return await* manageNeuronCommand(
+                #SetFollowing({ topic_following = followeesForTopic })
+            );
+        };
+
         public func increaseDissolveDelay({
             additional_dissolve_delay_seconds : Nat32;
         }) : async* Types.ConfigureResult {

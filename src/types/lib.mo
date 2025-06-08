@@ -69,4 +69,6 @@ module {
     public type SnsParameters = SnsGovernanceInterface.NervousSystemParameters;
 
     public type SnsMetadata = SnsGovernanceInterface.GetMetadataResponse;
+
+    public type SnsTopics = SnsGovernanceInterface.Topic;
 };

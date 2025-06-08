@@ -5,6 +5,7 @@ module {
     #AddGenericNervousSystemFunction : NervousSystemFunction;
     #ManageDappCanisterSettings : ManageDappCanisterSettings;
     #RemoveGenericNervousSystemFunction : Nat64;
+    #SetTopicsForCustomProposals : SetTopicsForCustomProposals;
     #UpgradeSnsToNextVersion : {};
     #RegisterDappCanisters : RegisterDappCanisters;
     #TransferSnsTreasuryFunds : TransferSnsTreasuryFunds;
@@ -48,12 +49,18 @@ module {
     memory_size : Nat;
     cycles : Nat;
     settings : DefiniteCanisterSettingsArgs;
+    query_stats : ?QueryStats;
     idle_cycles_burned_per_day : Nat;
     module_hash : ?Blob;
   };
   public type CanisterStatusType = { #stopped; #stopping; #running };
   public type ChangeAutoStakeMaturity = {
     requested_setting_for_auto_stake_maturity : Bool;
+  };
+  public type ChunkedCanisterWasm = {
+    wasm_module_hash : Blob;
+    chunk_hashes_list : [Blob];
+    store_canister_id : ?Principal;
   };
   public type ClaimOrRefresh = { by : ?By };
   public type ClaimOrRefreshResponse = { refreshed_neuron_id : ?NeuronId };
@@ -73,6 +80,7 @@ module {
     #ClaimOrRefresh : ClaimOrRefresh;
     #Configure : Configure;
     #RegisterVote : RegisterVote;
+    #SetFollowing : SetFollowing;
     #MakeProposal : Proposal;
     #StakeMaturity : StakeMaturity;
     #RemoveNeuronPermissions : RemoveNeuronPermissions;
@@ -88,6 +96,7 @@ module {
     #ClaimOrRefresh : ClaimOrRefreshResponse;
     #Configure : {};
     #RegisterVote : {};
+    #SetFollowing : {};
     #MakeProposal : GetProposal;
     #RemoveNeuronPermission : {};
     #StakeMaturity : StakeMaturityResponse;
@@ -101,6 +110,7 @@ module {
     #DisburseMaturity : DisburseMaturity;
     #Configure : Configure;
     #RegisterVote : RegisterVote;
+    #SetFollowing : SetFollowing;
     #SyncCommand : {};
     #MakeProposal : Proposal;
     #FinalizeDisburseMaturity : FinalizeDisburseMaturity;
@@ -115,6 +125,7 @@ module {
   public type DefaultFollowees = { followees : [(Nat64, Followees)] };
   public type DefiniteCanisterSettingsArgs = {
     freezing_threshold : Nat;
+    wasm_memory_threshold : ?Nat;
     controllers : [Principal];
     wasm_memory_limit : ?Nat;
     memory_allocation : Nat;
@@ -153,12 +164,15 @@ module {
     to_account : ?Account;
   };
   public type Follow = { function_id : Nat64; followees : [NeuronId] };
+  public type Followee = { alias : ?Text; neuron_id : ?NeuronId };
   public type Followees = { followees : [NeuronId] };
+  public type FolloweesForTopic = { topic : ?Topic; followees : [Followee] };
   public type FunctionType = {
     #NativeNervousSystemFunction : {};
     #GenericNervousSystemFunction : GenericNervousSystemFunction;
   };
   public type GenericNervousSystemFunction = {
+    topic : ?Topic;
     validator_canister_id : ?Principal;
     target_canister_id : ?Principal;
     validator_method_name : ?Text;
@@ -173,6 +187,9 @@ module {
     name : ?Text;
     description : ?Text;
   };
+  public type GetMetricsRequest = { time_window_seconds : ?Nat64 };
+  public type GetMetricsResponse = { get_metrics_result : ?GetMetricsResult };
+  public type GetMetricsResult = { #Ok : Metrics; #Err : GovernanceError };
   public type GetModeResponse = { mode : ?Int32 };
   public type GetNeuron = { neuron_id : ?NeuronId };
   public type GetNeuronResponse = { result : ?Result };
@@ -191,13 +208,14 @@ module {
     sns_initialization_parameters : Text;
   };
   public type GetTimersResponse = { timers : ?Timers };
-  public type GetUpgradeJournalRequest = {};
+  public type GetUpgradeJournalRequest = { offset : ?Nat64; limit : ?Nat64 };
   public type GetUpgradeJournalResponse = {
     upgrade_journal : ?UpgradeJournal;
     upgrade_steps : ?Versions;
     response_timestamp_seconds : ?Nat64;
     deployed_version : ?Version;
     target_version : ?Version;
+    upgrade_journal_entry_count : ?Nat64;
   };
   public type Governance = {
     root_canister_id : ?Principal;
@@ -259,14 +277,22 @@ module {
     before_proposal : ?ProposalId;
     limit : Nat32;
     exclude_type : [Nat64];
+    include_topics : ?[TopicSelector];
     include_status : [Int32];
   };
   public type ListProposalsResponse = {
     include_ballots_by_caller : ?Bool;
     proposals : [ProposalData];
+    include_topic_filtering : ?Bool;
+  };
+  public type ListTopicsRequest = {};
+  public type ListTopicsResponse = {
+    uncategorized_functions : ?[NervousSystemFunction];
+    topics : ?[TopicInfo];
   };
   public type ManageDappCanisterSettings = {
     freezing_threshold : ?Nat64;
+    wasm_memory_threshold : ?Nat64;
     canister_ids : [Principal];
     reserved_cycles_limit : ?Nat64;
     log_visibility : ?Int32;
@@ -298,6 +324,10 @@ module {
     merged_maturity_e8s : Nat64;
     new_stake_e8s : Nat64;
   };
+  public type Metrics = {
+    last_ledger_block_timestamp : ?Nat64;
+    num_recently_submitted_proposals : ?Nat64;
+  };
   public type MintSnsTokens = {
     to_principal : ?Principal;
     to_subaccount : ?Subaccount;
@@ -317,6 +347,7 @@ module {
     max_dissolve_delay_seconds : ?Nat64;
     max_dissolve_delay_bonus_percentage : ?Nat64;
     max_followees_per_function : ?Nat64;
+    automatically_advance_target_version : ?Bool;
     neuron_claimer_permissions : ?NeuronPermissionList;
     neuron_minimum_stake_e8s : ?Nat64;
     max_neuron_age_for_age_bonus : ?Nat64;
@@ -341,6 +372,7 @@ module {
     maturity_e8s_equivalent : Nat64;
     cached_neuron_stake_e8s : Nat64;
     created_timestamp_seconds : Nat64;
+    topic_followees : ?{ topic_id_to_followees : [(Int32, FolloweesForTopic)] };
     source_nns_neuron_id : ?Nat64;
     auto_stake_maturity : ?Bool;
     aging_since_timestamp_seconds : Nat64;
@@ -356,15 +388,6 @@ module {
   public type NeuronInFlightCommand = {
     command : ?Command_2;
     timestamp : Nat64;
-  };
-  public type NeuronParameters = {
-    controller : ?Principal;
-    dissolve_delay_seconds : ?Nat64;
-    source_nns_neuron_id : ?Nat64;
-    stake_e8s : ?Nat64;
-    followees : [NeuronId];
-    hotkey : ?Principal;
-    neuron_id : ?NeuronId;
   };
   public type NeuronPermission = {
     principal : ?Principal;
@@ -410,6 +433,7 @@ module {
   public type ProposalData = {
     id : ?ProposalId;
     payload_text_rendering : ?Text;
+    topic : ?Topic;
     action : Nat64;
     failure_reason : ?GovernanceError;
     action_auxiliary : ?ActionAuxiliary;
@@ -432,6 +456,12 @@ module {
     executed_timestamp_seconds : Nat64;
   };
   public type ProposalId = { id : Nat64 };
+  public type QueryStats = {
+    response_payload_bytes_total : ?Nat;
+    num_instructions_total : ?Nat;
+    num_calls_total : ?Nat;
+    request_payload_bytes_total : ?Nat;
+  };
   public type RegisterDappCanisters = { canister_ids : [Principal] };
   public type RegisterVote = { vote : Int32; proposal : ?ProposalId };
   public type RemoveNeuronPermissions = {
@@ -450,7 +480,11 @@ module {
     settled_proposals : [ProposalId];
   };
   public type SetDissolveTimestamp = { dissolve_timestamp_seconds : Nat64 };
+  public type SetFollowing = { topic_following : [FolloweesForTopic] };
   public type SetMode = { mode : Int32 };
+  public type SetTopicsForCustomProposals = {
+    custom_function_id_to_topic : [(Nat64, Topic)];
+  };
   public type SnsVersion = {
     archive_wasm_hash : ?Blob;
     root_wasm_hash : ?Blob;
@@ -482,6 +516,7 @@ module {
   public type TargetVersionSet = {
     old_target_version : ?Version;
     new_target_version : ?Version;
+    is_advanced_automatically : ?Bool;
   };
   public type Timers = {
     last_spawned_timestamp_seconds : ?Nat64;
@@ -489,6 +524,24 @@ module {
     requires_periodic_tasks : ?Bool;
   };
   public type Tokens = { e8s : ?Nat64 };
+  public type Topic = {
+    #DappCanisterManagement;
+    #DaoCommunitySettings;
+    #ApplicationBusinessLogic;
+    #CriticalDappOperations;
+    #TreasuryAssetManagement;
+    #Governance;
+    #SnsFrameworkManagement;
+  };
+  public type TopicInfo = {
+    native_functions : ?[NervousSystemFunction];
+    topic : ?Topic;
+    is_critical : ?Bool;
+    name : ?Text;
+    description : ?Text;
+    custom_functions : ?[NervousSystemFunction];
+  };
+  public type TopicSelector = { topic : ?Topic };
   public type TransferSnsTreasuryFunds = {
     from_treasury : Int32;
     to_principal : ?Principal;
@@ -527,6 +580,7 @@ module {
     new_canister_wasm : Blob;
     mode : ?Int32;
     canister_id : ?Principal;
+    chunked_canister_wasm : ?ChunkedCanisterWasm;
     canister_upgrade_arg : ?Blob;
   };
   public type UpgradeStarted = {
@@ -578,6 +632,7 @@ module {
     get_latest_reward_event : shared query () -> async RewardEvent;
     get_maturity_modulation : shared {} -> async GetMaturityModulationResponse;
     get_metadata : shared query {} -> async GetMetadataResponse;
+    get_metrics : shared composite query GetMetricsRequest -> async GetMetricsResponse;
     get_mode : shared query {} -> async GetModeResponse;
     get_nervous_system_parameters : shared query Null -> async NervousSystemParameters;
     get_neuron : shared query GetNeuron -> async GetNeuronResponse;
@@ -590,6 +645,7 @@ module {
     list_nervous_system_functions : shared query () -> async ListNervousSystemFunctionsResponse;
     list_neurons : shared query ListNeurons -> async ListNeuronsResponse;
     list_proposals : shared query ListProposals -> async ListProposalsResponse;
+    list_topics : shared query ListTopicsRequest -> async ListTopicsResponse;
     manage_neuron : shared ManageNeuron -> async ManageNeuronResponse;
     reset_timers : shared {} -> async {};
     set_mode : shared SetMode -> async {};

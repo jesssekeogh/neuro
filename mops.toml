@@ -1,6 +1,6 @@
 [package]
 name = "neuro"
-version = "0.7.5"
+version = "0.7.6"
 description = "A Motoko package for basic staking and neuron management."
 repository = "https://github.com/jesssekeogh/neuro"
 keywords = [ "neuro", "neuron", "nns", "stake", "icp" ]
