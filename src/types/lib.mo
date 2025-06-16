@@ -26,17 +26,21 @@ module {
 
     public type NnsSpawnResult = Result<NnsNeuronId, GovernanceError>;
 
+    public type NnsDisburseMaturityResponse = IcpGovernanceInterface.DisburseMaturityResponse;
+
+    public type NnsDisburseMaturityResult = Result<NnsDisburseMaturityResponse, Text>;
+
     public type NnsInformationResult = Result<NnsNeuronInformation, Text>;
 
     public type NnsOperation = IcpGovernanceInterface.Operation;
 
-    public type NnsCommand = IcpGovernanceInterface.Command;
+    public type NnsCommand = IcpGovernanceInterface.ManageNeuronCommandRequest;
 
     public type GovernanceError = ?IcpGovernanceInterface.GovernanceError;
 
-    // as a helper both NeuronInfo and Neuron are combined in this package
-    // NeuronInfo has information not included in Neuron such as "state"
-    public type NnsNeuronInformation = IcpGovernanceInterface.NeuronInfo and IcpGovernanceInterface.Neuron;
+    public type NnsNeuronInformation = IcpGovernanceInterface.Neuron;
+
+    public type NnsAccount = IcpGovernanceInterface.Account;
 
     // sns types:
 

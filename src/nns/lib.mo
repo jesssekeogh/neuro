@@ -154,37 +154,9 @@ module {
     let IcpGovernance = actor (Principal.toText(nns_canister_id)) : IcpGovernanceInterface.Self;
 
     public func getInformation() : async* Types.NnsInformationResult {
-      switch (await IcpGovernance.get_neuron_info_by_id_or_subaccount(neuron_id_or_subaccount), await IcpGovernance.get_full_neuron_by_id_or_subaccount(neuron_id_or_subaccount)) {
-        case (#Ok neuronInfo, #Ok neuron) {
-          return #ok({
-            age_seconds = neuronInfo.age_seconds;
-            created_timestamp_seconds = neuronInfo.created_timestamp_seconds;
-            dissolve_delay_seconds = neuronInfo.dissolve_delay_seconds;
-            joined_community_fund_timestamp_seconds = neuronInfo.joined_community_fund_timestamp_seconds;
-            known_neuron_data = neuronInfo.known_neuron_data;
-            recent_ballots = neuronInfo.recent_ballots;
-            retrieved_at_timestamp_seconds = neuronInfo.retrieved_at_timestamp_seconds;
-            stake_e8s = neuronInfo.stake_e8s;
-            state = neuronInfo.state;
-            voting_power = neuronInfo.voting_power;
-            account = neuron.account;
-            aging_since_timestamp_seconds = neuron.aging_since_timestamp_seconds;
-            cached_neuron_stake_e8s = neuron.cached_neuron_stake_e8s;
-            controller = neuron.controller;
-            dissolve_state = neuron.dissolve_state;
-            followees = neuron.followees;
-            hot_keys = neuron.hot_keys;
-            id = neuron.id;
-            kyc_verified = neuron.kyc_verified;
-            maturity_e8s_equivalent = neuron.maturity_e8s_equivalent;
-            neuron_fees_e8s = neuron.neuron_fees_e8s;
-            not_for_profit = neuron.not_for_profit;
-            spawn_at_timestamp_seconds = neuron.spawn_at_timestamp_seconds;
-            transfer = neuron.transfer;
-            voting_power_refreshed_timestamp_seconds = neuron.voting_power_refreshed_timestamp_seconds;
-            potential_voting_power = neuron.potential_voting_power;
-            deciding_voting_power = neuron.deciding_voting_power;
-          });
+      switch (await IcpGovernance.get_full_neuron_by_id_or_subaccount(neuron_id_or_subaccount)) {
+        case (#Ok neuron) {
+          return #ok(neuron);
         };
         case _ {
           return #err("Failed to fetch neuron information");
@@ -192,6 +164,7 @@ module {
       };
     };
 
+    // deprecated, use disburseMaturity instead
     public func spawn({
       percentage_to_spawn : ?Nat32;
       new_controller : ?Principal;
@@ -204,6 +177,33 @@ module {
           nonce = nonce;
         })
       );
+    };
+
+    public func disburseMaturity({
+      to_account_identifier : ?{ hash : Blob };
+      to_account : ?Types.NnsAccount;
+      percentage_to_disburse : Nat32;
+    }) : async* Types.NnsDisburseMaturityResult {
+      let { command } = await IcpGovernance.manage_neuron({
+        id = null;
+        neuron_id_or_subaccount = ?neuron_id_or_subaccount;
+        command = ?#DisburseMaturity({
+          to_account_identifier = to_account_identifier;
+          to_account = to_account;
+          percentage_to_disburse = percentage_to_disburse;
+        });
+      });
+
+      let ?commandList = command else return #err("Failed to execute neuron command. Neuron ID: " # debug_show neuron_id_or_subaccount);
+
+      switch (commandList) {
+        case (#DisburseMaturity result) {
+          return #ok(result);
+        };
+        case _ {
+          return #err("Command failed: " # debug_show commandList);
+        };
+      };
     };
 
     public func split({ amount_e8s : Nat64 }) : async* Types.NnsSpawnResult {
