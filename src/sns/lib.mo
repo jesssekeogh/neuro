@@ -5,7 +5,6 @@ import Nat32 "mo:base/Nat32";
 import Tools "../tools";
 import Types "../types";
 import Blob "mo:base/Blob";
-import Binary "mo:encoding/Binary";
 import SnsLedgerInterface "../interfaces/sns_ledger_interface";
 import SnsGovernanceInterface "../interfaces/sns_interface";
 
@@ -38,7 +37,7 @@ module {
             let newSubaccount : Blob = Tools.computeNeuronStakingSubaccountBytes(neuronController, convertedNonce);
 
             // convert the memo to blob for the icrc standard
-            let memo = convertedNonce |> Binary.BigEndian.fromNat64(_) |> Blob.fromArray(_);
+            let memo = convertedNonce |> Tools.bigEndianFromNat64(_) |> Blob.fromArray(_);
 
             switch (await SnsLedger.icrc1_transfer({ to = { owner = sns_canister_id; subaccount = ?newSubaccount }; fee = null; memo = ?memo; from_subaccount = null; created_at_time = null; amount = amount_e8s })) {
                 case (#Ok _) {

@@ -8,5 +8,4 @@ license = "MIT"
 
 [dependencies]
 sha2 = "0.1.0"
-encoding = "https://github.com/aviate-labs/encoding.mo#master@2711d18727e954b11afc0d37945608512b5fbce2"
 account-identifier = "1.0.2"
