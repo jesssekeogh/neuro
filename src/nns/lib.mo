@@ -275,6 +275,27 @@ module {
       );
     };
 
+    public func setFollowing({
+      followeesForTopic : [{
+        topic : ?Int32;
+        followees : ?[{ id : Types.NnsNeuronId }];
+      }];
+    }) : async* Types.CommandResult {
+      return await* manageNeuronCommand(
+        #SetFollowing({
+          topic_following = ?followeesForTopic;
+        })
+      );
+    };
+
+    public func setVisibility({ visibility : Int32 }) : async* Types.ConfigureResult {
+      return await* manageNeuronConfiguration(
+        #SetVisibility({
+          visibility = ?visibility;
+        })
+      );
+    };
+
     public func increaseDissolveDelay({
       additional_dissolve_delay_seconds : Nat32;
     }) : async* Types.ConfigureResult {

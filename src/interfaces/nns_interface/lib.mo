@@ -3,6 +3,7 @@ module {
   public type AccountIdentifier = { hash : Blob };
   public type Action = {
     #RegisterKnownNeuron : KnownNeuron;
+    #FulfillSubnetRentalRequest : FulfillSubnetRentalRequest;
     #ManageNeuron : ManageNeuron;
     #UpdateCanisterSettings : UpdateCanisterSettings;
     #InstallCode : InstallCode;
@@ -75,6 +76,7 @@ module {
     #RegisterVote : RegisterVote;
     #Merge : Merge;
     #DisburseToNeuron : DisburseToNeuron;
+    #SetFollowing : SetFollowing;
     #MakeProposal : Proposal;
     #StakeMaturity : StakeMaturity;
     #MergeMaturity : MergeMaturity;
@@ -92,6 +94,7 @@ module {
     #RegisterVote : {};
     #Merge : MergeResponse;
     #DisburseToNeuron : SpawnResponse;
+    #SetFollowing : SetFollowingResponse;
     #MakeProposal : MakeProposalResponse;
     #StakeMaturity : StakeMaturityResponse;
     #MergeMaturity : MergeMaturityResponse;
@@ -167,6 +170,12 @@ module {
   public type ExecuteNnsFunction = { nns_function : Int32; payload : Blob };
   public type Follow = { topic : Int32; followees : [NeuronId] };
   public type Followees = { followees : [NeuronId] };
+  public type FolloweesForTopic = { topic : ?Int32; followees : ?[NeuronId] };
+  public type FulfillSubnetRentalRequest = {
+    user : ?Principal;
+    replica_version_id : ?Text;
+    node_ids : ?[Principal];
+  };
   public type GetNeuronsFundAuditInfoRequest = {
     nns_proposal_id : ?ProposalId;
   };
@@ -199,9 +208,7 @@ module {
     not_dissolving_neurons_e8s_buckets : [(Nat64, Float)];
     dissolving_neurons_staked_maturity_e8s_equivalent_sum : Nat64;
     garbage_collectable_neurons_count : Nat64;
-    dissolving_neurons_staked_maturity_e8s_equivalent_buckets : [
-      (Nat64, Float)
-    ];
+    dissolving_neurons_staked_maturity_e8s_equivalent_buckets : [(Nat64, Float)];
     neurons_with_invalid_stake_count : Nat64;
     not_dissolving_neurons_count_buckets : [(Nat64, Nat64)];
     ect_neuron_count : Nat64;
@@ -219,6 +226,7 @@ module {
     total_voting_power_non_self_authenticating_controller : ?Nat64;
     total_staked_maturity_e8s_equivalent : Nat64;
     not_dissolving_neurons_e8s_buckets_ect : [(Nat64, Float)];
+    spawning_neurons_count : Nat64;
     declining_voting_power_neuron_subset_metrics : ?NeuronSubsetMetrics;
     total_staked_e8s_ect : Nat64;
     not_dissolving_neurons_staked_maturity_e8s_equivalent_sum : Nat64;
@@ -226,9 +234,7 @@ module {
     total_staked_e8s_non_self_authenticating_controller : ?Nat64;
     dissolving_neurons_e8s_buckets_seed : [(Nat64, Float)];
     neurons_with_less_than_6_months_dissolve_delay_e8s : Nat64;
-    not_dissolving_neurons_staked_maturity_e8s_equivalent_buckets : [
-      (Nat64, Float)
-    ];
+    not_dissolving_neurons_staked_maturity_e8s_equivalent_buckets : [(Nat64, Float)];
     dissolving_neurons_count_buckets : [(Nat64, Nat64)];
     dissolving_neurons_e8s_buckets_ect : [(Nat64, Float)];
     non_self_authenticating_controller_neuron_subset_metrics : ?NeuronSubsetMetrics;
@@ -354,6 +360,7 @@ module {
     #RegisterVote : RegisterVote;
     #Merge : Merge;
     #DisburseToNeuron : DisburseToNeuron;
+    #SetFollowing : SetFollowing;
     #MakeProposal : MakeProposalRequest;
     #StakeMaturity : StakeMaturity;
     #MergeMaturity : MergeMaturity;
@@ -596,6 +603,7 @@ module {
   };
   public type ProposalActionRequest = {
     #RegisterKnownNeuron : KnownNeuron;
+    #FulfillSubnetRentalRequest : FulfillSubnetRentalRequest;
     #ManageNeuron : ManageNeuronRequest;
     #UpdateCanisterSettings : UpdateCanisterSettings;
     #InstallCode : InstallCodeRequest;
@@ -710,6 +718,8 @@ module {
     default_followees : [(Int32, Followees)];
   };
   public type SetDissolveTimestamp = { dissolve_timestamp_seconds : Nat64 };
+  public type SetFollowing = { topic_following : ?[FolloweesForTopic] };
+  public type SetFollowingResponse = {};
   public type SetOpenTimeWindowRequest = { open_time_window : ?TimeWindow };
   public type SetSnsTokenSwapOpenTimeWindow = {
     request : ?SetOpenTimeWindowRequest;
@@ -837,5 +847,5 @@ module {
     simulate_manage_neuron : shared ManageNeuronRequest -> async ManageNeuronResponse;
     transfer_gtc_neuron : shared (NeuronId, NeuronId) -> async Result;
     update_node_provider : shared UpdateNodeProvider -> async Result;
-  }
-}
+  };
+};
