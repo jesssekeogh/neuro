@@ -206,9 +206,10 @@ module {
       };
     };
 
-    public func split({ amount_e8s : Nat64 }) : async* Types.NnsSpawnResult {
+    public func split({ amount_e8s : Nat64; nonce : ?Nat64 }) : async* Types.NnsSpawnResult {
       return await* manageNeuronSpawn(
         #Split({
+          memo = nonce;
           amount_e8s = amount_e8s;
         })
       );

@@ -12,6 +12,8 @@ module {
 
     public type CommandResult = Result<(), GovernanceError>;
 
+    public type NeuronDomain = { #stake; #split };
+
     // nns types:
 
     public type NnsNeuronId = Nat64;

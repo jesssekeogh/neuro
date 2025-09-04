@@ -741,7 +741,7 @@ module {
     nonce : ?Nat64;
   };
   public type SpawnResponse = { created_neuron_id : ?NeuronId };
-  public type Split = { amount_e8s : Nat64 };
+  public type Split = { memo : ?Nat64; amount_e8s : Nat64 };
   public type StakeMaturity = { percentage_to_stake : ?Nat32 };
   public type StakeMaturityResponse = {
     maturity_e8s : Nat64;

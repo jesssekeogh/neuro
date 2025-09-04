@@ -5,8 +5,22 @@ import Text "mo:base/Text";
 import Array "mo:base/Array";
 import Nat8 "mo:base/Nat8";
 import Nat64 "mo:base/Nat64";
+import Types "../types";
 
 module {
+
+    // Map domain tag -> bytes (utf8)
+    private func domainBytes(d : Types.NeuronDomain) : [Nat8] {
+        let s = switch d {
+            case (#stake) "neuron-stake";
+            case (#split) "split-neuron";
+        };
+        Blob.toArray(Text.encodeUtf8(s));
+    };
+
+    private func domainSize(db : [Nat8]) : [Nat8] = [Nat8.fromNat(db.size())];
+
+    private func controllerBytes(controller : Principal) : [Nat8] = Blob.toArray(Principal.toBlob(controller));
 
     private func nat64to8(n : Nat64) : Nat8 = Nat8.fromIntWrap(Nat64.toNat(n));
 
@@ -23,14 +37,23 @@ module {
         Array.freeze(b);
     };
 
+    public func computeNeuronSubaccountBytes(
+        controller : Principal,
+        nonce : Nat64,
+        domain : Types.NeuronDomain,
+    ) : Blob {
+        let hash = Sha256.Digest(#sha256);
+        let db = domainBytes(domain);
+        hash.writeArray(domainSize(db));
+        hash.writeArray(db);
+        hash.writeArray(controllerBytes(controller));
+        hash.writeArray(bigEndianFromNat64(nonce));
+        return hash.sum();
+    };
+
     // motoko version of this: https://github.com/dfinity/ic/blob/0f7973af4283f3244a08b87ea909b6f605d65989/rs/nervous_system/common/src/ledger.rs#L210
     public func computeNeuronStakingSubaccountBytes(controller : Principal, nonce : Nat64) : Blob {
-        let hash = Sha256.Digest(#sha256);
-        hash.writeArray([0x0c]);
-        hash.writeArray(Blob.toArray(Text.encodeUtf8("neuron-stake")));
-        hash.writeArray(Blob.toArray(Principal.toBlob(controller)));
-        hash.writeArray(bigEndianFromNat64(nonce)); // needs to be big endian bytes
-        return hash.sum();
+        computeNeuronSubaccountBytes(controller, nonce, #stake);
     };
 
 };
